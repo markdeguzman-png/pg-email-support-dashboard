@@ -350,16 +350,40 @@
     <script>
         let allData = [];
 
-        // Sample data
+        // Sample data from Schedule tab
         const sampleData = [
             { name: "Paul Acsay", role: "Email Support", customersHelped: 47, hrs: 8.06, monthlyHappiness: 80, replies: 48, hubActNum: 5.64, conversationsRepliedTo: 32, csatNum: 3, csatDen: 9, repliesSent: 14, status: "Active" },
             { name: "Rocy Benitez", role: "Subject Matter Expert", customersHelped: 34, hrs: 8.14, monthlyHappiness: 82, replies: 34, hubActNum: 4.97, conversationsRepliedTo: 28, csatNum: 14, csatDen: 14, repliesSent: 21, status: "Active" },
             { name: "Shairah Marie Oraiz", role: "Email Support", customersHelped: 6, hrs: 8.37, monthlyHappiness: 90, replies: 6, hubActNum: 6.36, conversationsRepliedTo: 18, csatNum: 7, csatDen: 8, repliesSent: 12, status: "Active" },
             { name: "Sheryn Oraiz", role: "Email Support", customersHelped: 18, hrs: 8.04, monthlyHappiness: 83, replies: 18, hubActNum: 4.83, conversationsRepliedTo: 25, csatNum: 11, csatDen: 12, repliesSent: 18, status: "Active" },
             { name: "Shirl Dev", role: "Email Support", customersHelped: 49, hrs: 8.42, monthlyHappiness: 93, replies: 50, hubActNum: 5.05, conversationsRepliedTo: 42, csatNum: 20, csatDen: 21, repliesSent: 28, status: "Active" },
+            { name: "Shruti Dev", role: "Email Support", customersHelped: 50, hrs: 8.42, monthlyHappiness: 95, replies: 50, hubActNum: 5.81, conversationsRepliedTo: 32, csatNum: 18, csatDen: 19, repliesSent: 22, status: "Active" },
+            { name: "Stephanie Rae Caranay", role: "Email Support", customersHelped: 36, hrs: 8.18, monthlyHappiness: 90, replies: 32, hubActNum: 4.82, conversationsRepliedTo: 28, csatNum: 15, csatDen: 16, repliesSent: 19, status: "Active" },
+            { name: "Tom Joshua Sermise", role: "Email Support", customersHelped: 44, hrs: 8.05, monthlyHappiness: 94, replies: 46, hubActNum: 6.84, conversationsRepliedTo: 35, csatNum: 16, csatDen: 17, repliesSent: 24, status: "Active" },
+            { name: "Vanessa Saquing", role: "Email Support", customersHelped: 37, hrs: 5.64, monthlyHappiness: 87, replies: 35, hubActNum: 3.38, conversationsRepliedTo: 22, csatNum: 9, csatDen: 10, repliesSent: 14, status: "Active" },
+            { name: "Vivek Dev", role: "Email Support", customersHelped: 26, hrs: 8.03, monthlyHappiness: 89, replies: 26, hubActNum: 2.61, conversationsRepliedTo: 20, csatNum: 8, csatDen: 9, repliesSent: 11, status: "Active" },
+            { name: "Atlan Maraat", role: "Email Support", customersHelped: 37, hrs: 8.16, monthlyHappiness: 88, replies: 38, hubActNum: 5.88, conversationsRepliedTo: 25, csatNum: 12, csatDen: 13, repliesSent: 17, status: "Active" },
+            { name: "Alexis Marie Abeleda", role: "Email Support", customersHelped: 42, hrs: 8.21, monthlyHappiness: 91, replies: 42, hubActNum: 5.42, conversationsRepliedTo: 30, csatNum: 14, csatDen: 15, repliesSent: 20, status: "Active" },
+            { name: "Angelo Bassig", role: "Admin Support Specialist", customersHelped: 25, hrs: 0.25, monthlyHappiness: 92, replies: 25, hubActNum: 0.13, conversationsRepliedTo: 18, csatNum: 9, csatDen: 10, repliesSent: 12, status: "Active" },
+            { name: "Ame Mercado", role: "Subject Matter Expert", customersHelped: 39, hrs: 8.94, monthlyHappiness: 85, replies: 40, hubActNum: 7.16, conversationsRepliedTo: 28, csatNum: 13, csatDen: 14, repliesSent: 18, status: "Active" },
+            { name: "Apple Joy Garcia", role: "Email Support", customersHelped: 41, hrs: 8.13, monthlyHappiness: 83, replies: 44, hubActNum: 4.88, conversationsRepliedTo: 32, csatNum: 14, csatDen: 15, repliesSent: 21, status: "Active" },
+            { name: "Arianne Len Estrada", role: "Email Support", customersHelped: 45, hrs: 8.31, monthlyHappiness: 86, replies: 47, hubActNum: 5.32, conversationsRepliedTo: 33, csatNum: 15, csatDen: 16, repliesSent: 22, status: "Active" },
+            { name: "Amyah Veliasco", role: "Email Support", customersHelped: 49, hrs: 8.22, monthlyHappiness: 91, replies: 51, hubActNum: 6.17, conversationsRepliedTo: 38, csatNum: 18, csatDen: 19, repliesSent: 26, status: "Active" },
             { name: "Carlo Ramirez", role: "Live Chat Specialist I", customersHelped: 28, hrs: 8.23, monthlyHappiness: 85, replies: 32, hubActNum: 5.02, conversationsRepliedTo: 45, csatNum: 18, csatDen: 20, repliesSent: 35, status: "Active" },
             { name: "Danie Moreno", role: "Email Support", customersHelped: 52, hrs: 8.12, monthlyHappiness: 88, replies: 55, hubActNum: 6.98, conversationsRepliedTo: 22, csatNum: 9, csatDen: 10, repliesSent: 16, status: "Active" },
-            { name: "Djonts Molas", role: "Live Chat Specialist I", customersHelped: 35, hrs: 5.70, monthlyHappiness: 91, replies: 40, hubActNum: 3.30, conversationsRepliedTo: 52, csatNum: 25, csatDen: 27, repliesSent: 42, status: "Active" }
+            { name: "Djonts Molas", role: "Live Chat Specialist I", customersHelped: 35, hrs: 5.70, monthlyHappiness: 91, replies: 40, hubActNum: 3.30, conversationsRepliedTo: 52, csatNum: 25, csatDen: 27, repliesSent: 42, status: "Active" },
+            { name: "Edward Philip Vergara", role: "Supervisor", customersHelped: 28, hrs: 8.06, monthlyHappiness: 89, replies: 30, hubActNum: 6.32, conversationsRepliedTo: 25, csatNum: 11, csatDen: 12, repliesSent: 18, status: "Active" },
+            { name: "Lester Labayog", role: "Email Support", customersHelped: 48, hrs: 8.06, monthlyHappiness: 87, replies: 50, hubActNum: 5.32, conversationsRepliedTo: 28, csatNum: 12, csatDen: 13, repliesSent: 19, status: "Active" },
+            { name: "Frances Rivera", role: "Email Support", customersHelped: 31, hrs: 2.83, monthlyHappiness: 84, replies: 33, hubActNum: 1.53, conversationsRepliedTo: 20, csatNum: 8, csatDen: 9, repliesSent: 13, status: "Active" },
+            { name: "Greg Collera", role: "Email Support", customersHelped: 46, hrs: 9.05, monthlyHappiness: 86, replies: 48, hubActNum: 5.52, conversationsRepliedTo: 30, csatNum: 13, csatDen: 14, repliesSent: 20, status: "Active" },
+            { name: "Heidi Aizaga", role: "Physical Product Support", customersHelped: 32, hrs: 8.11, monthlyHappiness: 85, replies: 34, hubActNum: 4.45, conversationsRepliedTo: 24, csatNum: 10, csatDen: 11, repliesSent: 16, status: "Active" },
+            { name: "J. Cabanusia", role: "Email Support", customersHelped: 44, hrs: 8.15, monthlyHappiness: 88, replies: 45, hubActNum: 5.19, conversationsRepliedTo: 28, csatNum: 12, csatDen: 13, repliesSent: 19, status: "Active" },
+            { name: "Jimson Saquing", role: "Email Support", customersHelped: 48, hrs: 8.38, monthlyHappiness: 90, replies: 50, hubActNum: 3.10, conversationsRepliedTo: 32, csatNum: 14, csatDen: 15, repliesSent: 21, status: "Active" },
+            { name: "John Clowe Marzan", role: "Email Support", customersHelped: 52, hrs: 9.13, monthlyHappiness: 87, replies: 54, hubActNum: 6.30, conversationsRepliedTo: 35, csatNum: 16, csatDen: 17, repliesSent: 24, status: "Active" },
+            { name: "Johany Denoia", role: "Email Support", customersHelped: 35, hrs: 8.18, monthlyHappiness: 89, replies: 37, hubActNum: 4.81, conversationsRepliedTo: 26, csatNum: 11, csatDen: 12, repliesSent: 17, status: "Active" },
+            { name: "Julia Mercedez Reusora", role: "Email Support", customersHelped: 41, hrs: 8.03, monthlyHappiness: 86, replies: 43, hubActNum: 5.78, conversationsRepliedTo: 29, csatNum: 13, csatDen: 14, repliesSent: 20, status: "Active" },
+            { name: "Jumar Dichoso", role: "Email Support", customersHelped: 44, hrs: 8.03, monthlyHappiness: 91, replies: 46, hubActNum: 6.02, conversationsRepliedTo: 30, csatNum: 14, csatDen: 15, repliesSent: 21, status: "Active" },
+            { name: "Juljo Abeleda", role: "Email Support", customersHelped: 35, hrs: 8.10, monthlyHappiness: 88, replies: 37, hubActNum: 5.19, conversationsRepliedTo: 25, csatNum: 11, csatDen: 12, repliesSent: 17, status: "Active" }
         ];
 
         function loadData() {
@@ -404,7 +428,7 @@
             document.getElementById('emailPerHour').textContent = (totalCustomers / totalHrs).toFixed(2);
             document.getElementById('emailHappiness').textContent = avgHappiness.toFixed(0);
             document.getElementById('emailReplies').textContent = totalReplies;
-            document.getElementById('emailHubActivity').textContent = (totalHubActivity / totalHrs).toFixed(2);
+            document.getElementById('emailHubActivity').textContent = ((totalHubActivity / totalHrs) * 100).toFixed(1) + '%';
         }
 
         function updateChatMetrics(data) {
@@ -437,7 +461,7 @@
                         <td>${(d.customersHelped / d.hrs).toFixed(2)}</td>
                         <td>${d.monthlyHappiness}</td>
                         <td>${d.replies}</td>
-                        <td>${(d.hubActNum / d.hrs).toFixed(2)}</td>
+                        <td>${((d.hubActNum / d.hrs) * 100).toFixed(1)}%</td>
                         <td><span class="status-${d.status.toLowerCase()}">${d.status}</span></td>
                     </tr>
                 `).join('')
