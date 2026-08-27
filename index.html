@@ -381,23 +381,23 @@
 
                 // Parse rows into data objects
                 const parsed = rows.map(row => {
-                    if (!row[0]) return null; // Skip empty rows
+                    if (!row[22] && !row[23]) return null; // Skip empty rows (Name and Role are cols 22-23)
                     return {
-                        name: row[colMap['name'] || 0] || '',
-                        role: row[colMap['role'] || 1] || '',
-                        customersHelped: parseInt(row[colMap['customers_helped'] || 2]) || 0,
-                        hrs: parseFloat(row[colMap['hrs'] || 3]) || 0,
-                        monthlyHappiness: parseInt(row[colMap['monthly_happiness'] || 4]) || 0,
-                        replies: parseInt(row[colMap['replies'] || 5]) || 0,
-                        hubActNum: parseFloat(row[colMap['hub_act_num'] || 6]) || 0,
-                        conversationsRepliedTo: parseInt(row[colMap['conversations_replied_to'] || 7]) || 0,
-                        csatNum: parseInt(row[colMap['csat_num'] || 8]) || 0,
-                        csatDen: parseInt(row[colMap['csat_den'] || 9]) || 1,
-                        repliesSent: parseInt(row[colMap['replies_sent'] || 10]) || 0,
-                        status: row[colMap['employment_status'] || 11] || 'Active',
-                        date: row[colMap['date'] || 12] || new Date().toISOString().split('T')[0]
+                        name: row[22] || '',
+                        role: row[23] || '',
+                        customersHelped: parseInt(row[1]) || 0,
+                        hrs: parseFloat(row[10]) || 0,
+                        monthlyHappiness: parseInt(row[3]) || 0,
+                        replies: parseInt(row[0]) || 0,
+                        hubActNum: parseFloat(row[11]) || 0,
+                        conversationsRepliedTo: parseInt(row[7]) || 0,
+                        csatNum: parseInt(row[4]) || 0,
+                        csatDen: parseInt(row[5]) || 1,
+                        repliesSent: parseInt(row[8]) || 0,
+                        status: row[14] || 'Active',
+                        date: row[17] || new Date().toISOString().split('T')[0]
                     };
-                }).filter(d => d !== null);
+                }).filter(d => d !== null && d.name);
 
                 return parsed;
             } catch (error) {
