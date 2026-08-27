@@ -402,7 +402,7 @@
                         csatNum: parseInt(row[4]) || 0,
                         csatDen: parseInt(row[5]) || 1,
                         repliesSent: parseInt(row[8]) || 0,
-                        status: (row[14] || 'Active').trim(),
+                        status: (row[13] || 'Active').trim(),
                         date: (row[17] || new Date().toISOString().split('T')[0]).trim()
                     };
                 }).filter(d => d !== null);
