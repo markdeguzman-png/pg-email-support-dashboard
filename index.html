@@ -496,16 +496,29 @@
             });
         }
 
+        function parseDate(dateStr) {
+            if (!dateStr) return new Date('2026-08-27');
+            // Handle both "7/1/2026" and "2026-08-27" formats
+            if (dateStr.includes('/')) {
+                const [m, d, y] = dateStr.split('/');
+                return new Date(y, parseInt(m) - 1, d);
+            }
+            return new Date(dateStr);
+        }
+
         function applyFilters() {
             let filtered = allData;
 
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             if (startDate) {
-                filtered = filtered.filter(d => (d.date || '2026-08-27') >= startDate);
+                const start = new Date(startDate);
+                filtered = filtered.filter(d => parseDate(d.date) >= start);
             }
             if (endDate) {
-                filtered = filtered.filter(d => (d.date || '2026-08-27') <= endDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59);
+                filtered = filtered.filter(d => parseDate(d.date) <= end);
             }
 
             const roleFilter = document.getElementById('roleFilter').value;
