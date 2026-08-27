@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Golf - Support Operations</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --perf-orange: #FD3300;
+            --dark-orange: #DB2C00;
+            --black: #1D1A1A;
+            --ui-gray: #7B726C;
+            --stone: #B3AAA3;
+            --pebble: #DFD9D5;
+            --sand: #ECE9E4;
+            --fog: #F4F2F0;
+            --mist: #FCFAFA;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--black);
+            color: var(--white);
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            background: var(--black);
+            border-bottom: 3px solid var(--perf-orange);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--perf-orange);
+            border-radius: 50%;
+        }
+
+        .logo-text {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .logo-text strong {
+            display: block;
+            font-size: 18px;
+            color: var(--perf-orange);
+            margin-bottom: 2px;
+        }
+
+        .filters-bar {
+            background: var(--black);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--pebble);
+        }
+
+        .filter {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-label {
+            font-size: 11px;
+            color: var(--ui-gray);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input[type="date"] {
+            padding: 8px 12px;
+            background: var(--fog);
+            border: 1px solid var(--stone);
+            border-radius: 4px;
+            color: var(--black);
+            font-size: 13px;
+            cursor: pointer;
+            min-width: 140px;
+        }
+
+        select:focus, input[type="date"]:focus {
+            outline: none;
+            border-color: var(--perf-orange);
+            box-shadow: 0 0 0 2px rgba(253, 51, 0, 0.2);
+        }
+
+        .tabs-section {
+            background: var(--fog);
+            padding: 12px 24px;
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--pebble);
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ui-gray);
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--perf-orange);
+            border-bottom-color: var(--perf-orange);
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--black);
+        }
+
+        .main-content {
+            padding: 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--pebble);
+        }
+
+        .section-header h2 {
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .section-header .icon {
+            font-size: 20px;
+        }
+
+        .expand-controls {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .expand-controls button {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--stone);
+            border-radius: 3px;
+            color: var(--ui-gray);
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .expand-controls button:hover {
+            border-color: var(--perf-orange);
+            color: var(--perf-orange);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .metric-card {
+            background: var(--fog);
+            border: 1px solid var(--pebble);
+            border-radius: 6px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid var(--perf-orange);
+        }
+
+        .metric-card:hover {
+            border-color: var(--perf-orange);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-card.collapsed {
+            max-height: 120px;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--ui-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .metric-compare {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .metric-compare.positive {
+            color: #4CAF50;
+        }
+
+        .metric-compare.negative {
+            color: var(--perf-orange);
+        }
+
+        .metric-source {
+            font-size: 11px;
+            color: var(--stone);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--pebble);
+        }
+
+        .chart-section {
+            background: var(--fog);
+            border: 1px solid var(--pebble);
+            border-radius: 6px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--pebble);
+        }
+
+        .chart-header h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+            color: var(--black);
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .chart-btn {
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--pebble);
+            border-radius: 3px;
+            color: var(--black);
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .chart-btn.active {
+            background: var(--perf-orange);
+            border-color: var(--perf-orange);
+            color: white;
+        }
+
+        .chart-btn:hover:not(.active) {
+            border-color: var(--black);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 16px;
+        }
+
+        .table-container {
+            background: var(--fog);
+            border: 1px solid var(--pebble);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: var(--sand);
+            border-bottom: 1px solid var(--pebble);
+        }
+
+        th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--black);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--pebble);
+            color: var(--black);
+        }
+
+        tbody tr:hover {
+            background: var(--mist);
+        }
+
+        .status-active {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .status-inactive {
+            background: rgba(123, 114, 108, 0.1);
+            color: var(--ui-gray);
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .refresh-badge {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--perf-orange);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .refresh-badge:hover {
+            background: var(--dark-orange);
+            transform: scale(1.05);
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: var(--ui-gray);
+            padding: 12px 24px;
+            background: var(--fog);
+            border-bottom: 1px solid var(--pebble);
+        }
+
+        .info-text strong {
+            color: var(--black);
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px 24px;
+            color: var(--ui-gray);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="logo-section">
+            <div class="logo-dot"></div>
+            <div class="logo-text">
+                <strong>PHONE TEAM</strong>
+                Calls · Connects · Conversion · Outcomes
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-bar">
+        <div class="filter">
+            <label class="filter-label">Team</label>
+            <select id="teamFilter">
+                <option value="">All teams</option>
+                <option value="Email Support">Email Support</option>
+                <option value="Live Chat Specialist I">Live Chat</option>
+            </select>
+        </div>
+        <div class="filter">
+            <label class="filter-label">User</label>
+            <select id="userFilter">
+                <option value="">All users</option>
+            </select>
+        </div>
+        <div class="filter">
+            <label class="filter-label">Date Range</label>
+            <select id="dateRangeFilter">
+                <option value="7days">Last 7 days</option>
+                <option value="14days">Last 14 days</option>
+                <option value="30days">Last 30 days</option>
+                <option value="custom">Custom range</option>
+            </select>
+        </div>
+        <div class="filter" id="customDateFilter" style="display: none;">
+            <label class="filter-label">From</label>
+            <input type="date" id="startDate">
+        </div>
+        <div class="filter" id="customDateFilter2" style="display: none;">
+            <label class="filter-label">To</label>
+            <input type="date" id="endDate">
+        </div>
+        <button class="expand-controls" style="margin-left: auto; background: var(--perf-orange); color: white; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; font-weight: 600; font-size: 12px;" onclick="location.reload()">Reset filters</button>
+    </div>
+
+    <div class="tabs-section">
+        <button class="tab active" onclick="switchTab('email')">📧 Email Support</button>
+        <button class="tab" onclick="switchTab('chat')">💬 Live Chat</button>
+    </div>
+
+    <div class="info-text">
+        <strong>Last updated:</strong> <span id="lastUpdateTime">Just now</span> · <strong>Data as of:</strong> <span id="dataDate">Today</span>
+    </div>
+
+    <div class="main-content">
+        <!-- Email Support Section -->
+        <div id="emailTab" class="tab-content">
+            <div class="section-header">
+                <div class="icon">📊</div>
+                <h2>Operations KPIs</h2>
+                <div class="expand-controls">
+                    <button onclick="expandAll('email')">Expand all</button>
+                    <button onclick="collapseAll('email')">Collapse all</button>
+                </div>
+            </div>
+
+            <div class="metrics-grid" id="emailMetrics">
+                <!-- Populated by JavaScript -->
+            </div>
+
+            <div class="section-header" style="margin-top: 40px;">
+                <div class="icon">📈</div>
+                <h2>Performance Trend</h2>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h3>Customers Helped</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" onclick="switchChartPeriod('daily')">Daily</button>
+                        <button class="chart-btn" onclick="switchChartPeriod('weekly')">Weekly</button>
+                        <button class="chart-btn" onclick="switchChartPeriod('monthly')">Monthly</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="emailChart"></canvas>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Team Member</th>
+                            <th>Customers Helped</th>
+                            <th>Emails/Hour</th>
+                            <th>Happiness</th>
+                            <th>Hub Activity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="emailTableBody">
+                        <tr><td colspan="6" class="no-data">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Chat Section -->
+        <div id="chatTab" class="tab-content" style="display: none;">
+            <div class="section-header">
+                <div class="icon">📊</div>
+                <h2>Operations KPIs</h2>
+                <div class="expand-controls">
+                    <button onclick="expandAll('chat')">Expand all</button>
+                    <button onclick="collapseAll('chat')">Collapse all</button>
+                </div>
+            </div>
+
+            <div class="metrics-grid" id="chatMetrics">
+                <!-- Populated by JavaScript -->
+            </div>
+
+            <div class="section-header" style="margin-top: 40px;">
+                <div class="icon">📈</div>
+                <h2>Performance Trend</h2>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h3>Chat Count</h3>
+                    <div class="chart-controls">
+                        <button class="chart-btn active" onclick="switchChartPeriod('daily')">Daily</button>
+                        <button class="chart-btn" onclick="switchChartPeriod('weekly')">Weekly</button>
+                        <button class="chart-btn" onclick="switchChartPeriod('monthly')">Monthly</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chatChart"></canvas>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Team Member</th>
+                            <th>Chat Count</th>
+                            <th>Chats/Hour</th>
+                            <th>CSAT</th>
+                            <th>Replies Sent</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="chatTableBody">
+                        <tr><td colspan="6" class="no-data">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="refresh-badge" onclick="refreshData()">
+        <span>↻</span>
+        <span id="refreshText">Refresh</span>
+    </div>
+
+    <script>
+        let allData = [];
+        let chartInstance = null;
+
+        const CONFIG = {
+            SHEET_ID: '1REQYqoqsT1MKwLAiRqF84z95gGIWnlbMgPhl8xawdwE',
+            API_KEY: localStorage.getItem('pgApiKey') || '',
+            USE_LIVE_DATA: localStorage.getItem('pgUseLiveData') === 'true'
+        };
+
+        // Fetch from Google Sheets API
+        async function fetchGoogleSheetData() {
+            if (!CONFIG.API_KEY || !CONFIG.USE_LIVE_DATA) {
+                loadSampleData();
+                return;
+            }
+
+            try {
+                const range = 'Schedule!A:X';
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${range}?key=${CONFIG.API_KEY}`;
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.values) {
+                    parseSheetData(result.values);
+                } else {
+                    loadSampleData();
+                }
+            } catch (error) {
+                console.error('Error fetching from Google Sheets:', error);
+                loadSampleData();
+            }
+        }
+
+        // Parse sheet data with proper column mapping
+        function parseSheetData(rows) {
+            if (!rows || rows.length < 2) {
+                loadSampleData();
+                return;
+            }
+
+            const headers = rows[0];
+            const colMap = {
+                replies: 0,
+                customersHelped: 1,
+                dailyHappiness: 2,
+                monthlyHappiness: 3,
+                csatNum: 4,
+                csatDen: 5,
+                conversationsAssigned: 6,
+                conversationsRepliedTo: 7,
+                repliesSent: 8,
+                closedConversations: 9,
+                hrs: 10,
+                hubActNum: 11,
+                hubDen: 12,
+                status: 13,
+                month: 14,
+                weekBeginning: 15,
+                day: 16,
+                date: 17,
+                scheduledHrs: 18,
+                startTime: 19,
+                endTime: 20,
+                statusField: 21,
+                name: 22,
+                role: 23
+            };
+
+            allData = rows.slice(1)
+                .filter(row => row[22] && row[22].trim()) // Filter by name
+                .map(row => ({
+                    name: row[22] || 'Unknown',
+                    role: row[23] || 'Unknown',
+                    date: row[17] || new Date().toISOString().split('T')[0],
+                    replies: parseInt(row[0]) || 0,
+                    customersHelped: parseInt(row[1]) || 0,
+                    dailyHappiness: parseInt(row[2]) || 0,
+                    monthlyHappiness: parseInt(row[3]) || 0,
+                    csatNum: parseInt(row[4]) || 0,
+                    csatDen: parseInt(row[5]) || 0,
+                    conversationsAssigned: parseInt(row[6]) || 0,
+                    conversationsRepliedTo: parseInt(row[7]) || 0,
+                    repliesSent: parseInt(row[8]) || 0,
+                    closedConversations: parseInt(row[9]) || 0,
+                    hrs: parseFloat(row[10]) || 0,
+                    hubActNum: parseFloat(row[11]) || 0,
+                    hubDen: parseFloat(row[12]) || 0,
+                    status: row[13] || 'Unknown'
+                }));
+
+            updateDisplay();
+        }
+
+        // Load sample data
+        function loadSampleData() {
+            allData = [
+                { name: "Paul Acsay", role: "Social Media Support I Email Support", date: "7/1/2026", replies: 48, customersHelped: 47, monthlyHappiness: 80, hrs: 8.06, hubActNum: 5.64, conversationsRepliedTo: 32, csatNum: 3, csatDen: 9, repliesSent: 14, status: "Active" },
+                { name: "Rocy Benitez", role: "Subject Matter Expert", date: "7/1/2026", replies: 34, customersHelped: 34, monthlyHappiness: 82, hrs: 8.14, hubActNum: 4.97, conversationsRepliedTo: 28, csatNum: 14, csatDen: 14, repliesSent: 21, status: "Active" },
+                { name: "Shairah Marie Oraiz", role: "Email Support", date: "7/1/2026", replies: 6, customersHelped: 6, monthlyHappiness: 90, hrs: 8.37, hubActNum: 6.36, conversationsRepliedTo: 18, csatNum: 7, csatDen: 8, repliesSent: 12, status: "Active" },
+                { name: "Sheryn Oraiz", role: "Email Support", date: "7/1/2026", replies: 18, customersHelped: 18, monthlyHappiness: 83, hrs: 8.04, hubActNum: 4.83, conversationsRepliedTo: 25, csatNum: 11, csatDen: 12, repliesSent: 18, status: "Active" },
+                { name: "Shirl Dev", role: "Email Support", date: "7/1/2026", replies: 50, customersHelped: 49, monthlyHappiness: 93, hrs: 8.42, hubActNum: 5.05, conversationsRepliedTo: 42, csatNum: 20, csatDen: 21, repliesSent: 28, status: "Active" },
+                { name: "Shruti Dev", role: "Email Support", date: "7/1/2026", replies: 50, customersHelped: 50, monthlyHappiness: 95, hrs: 8.42, hubActNum: 5.81, conversationsRepliedTo: 32, csatNum: 18, csatDen: 19, repliesSent: 22, status: "Active" },
+                { name: "Stephanie Rae Caranay", role: "Email Support", date: "7/1/2026", replies: 32, customersHelped: 36, monthlyHappiness: 90, hrs: 8.18, hubActNum: 4.82, conversationsRepliedTo: 28, csatNum: 15, csatDen: 16, repliesSent: 19, status: "Active" },
+                { name: "Tom Joshua Sermise", role: "Zowie I Email Support", date: "7/1/2026", replies: 46, customersHelped: 44, monthlyHappiness: 94, hrs: 8.05, hubActNum: 6.84, conversationsRepliedTo: 35, csatNum: 16, csatDen: 17, repliesSent: 24, status: "Active" },
+                { name: "Vanessa Saquing", role: "Email Support", date: "7/1/2026", replies: 35, customersHelped: 37, monthlyHappiness: 87, hrs: 5.64, hubActNum: 3.38, conversationsRepliedTo: 22, csatNum: 9, csatDen: 10, repliesSent: 14, status: "Active" },
+                { name: "Vivek Dev", role: "Email Support", date: "7/1/2026", replies: 26, customersHelped: 26, monthlyHappiness: 89, hrs: 8.03, hubActNum: 2.61, conversationsRepliedTo: 20, csatNum: 8, csatDen: 9, repliesSent: 11, status: "Active" }
+            ];
+            updateDisplay();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').style.display = 'block';
+        }
+
+        function updateDisplay() {
+            const emailData = allData.filter(d => d.role === 'Email Support');
+            const chatData = allData.filter(d => d.role === 'Live Chat Specialist I');
+
+            updateMetrics('email', emailData);
+            updateMetrics('chat', chatData);
+            updateTables();
+            updateTimestamps();
+        }
+
+        function updateMetrics(type, data) {
+            const metricsDiv = document.getElementById(type + 'Metrics');
+            metricsDiv.innerHTML = '';
+
+            if (type === 'email') {
+                const totalCustomers = data.reduce((s, d) => s + d.customersHelped, 0);
+                const totalHrs = data.reduce((s, d) => s + d.hrs, 0);
+                const avgHappiness = data.reduce((s, d) => s + d.monthlyHappiness, 0) / Math.max(data.length, 1);
+                const totalReplies = data.reduce((s, d) => s + d.replies, 0);
+                const totalHubActivity = data.reduce((s, d) => s + d.hubActNum, 0);
+
+                const metrics = [
+                    { label: 'Customers Helped', value: totalCustomers, source: 'Call Tracker', trend: '+8.1%' },
+                    { label: 'Emails per Hour', value: (totalCustomers / Math.max(totalHrs, 1)).toFixed(2), source: 'Efficiency', trend: '+3.6%' },
+                    { label: 'Monthly Happiness', value: avgHappiness.toFixed(0), source: 'Surveys', trend: '+1.7%' },
+                    { label: 'Total Replies', value: totalReplies, source: 'System', trend: '+2.1%' },
+                    { label: 'Hub Activity', value: (totalHubActivity / Math.max(totalHrs, 1)).toFixed(2), source: 'Hub Tracker', trend: '+1.2%' }
+                ];
+                metrics.forEach(m => {
+                    metricsDiv.innerHTML += `
+                        <div class="metric-card">
+                            <div class="metric-label">${m.label}</div>
+                            <div class="metric-value">${m.value}</div>
+                            <div class="metric-compare positive">▲ ${m.trend}</div>
+                            <div class="metric-source">${m.source}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                const totalChats = data.reduce((s, d) => s + d.conversationsRepliedTo, 0);
+                const totalHrs = data.reduce((s, d) => s + d.hrs, 0);
+                const totalCsatNum = data.reduce((s, d) => s + d.csatNum, 0);
+                const totalCsatDen = data.reduce((s, d) => s + d.csatDen, 0);
+                const totalRepliesSent = data.reduce((s, d) => s + d.repliesSent, 0);
+
+                const metrics = [
+                    { label: 'Chat Count', value: totalChats, source: 'Chat System', trend: '+5.2%' },
+                    { label: 'Chats per Hour', value: (totalChats / Math.max(totalHrs, 1)).toFixed(2), source: 'System', trend: '+2.8%' },
+                    { label: 'CSAT Score', value: (totalCsatNum / Math.max(totalCsatDen, 1) * 100).toFixed(1) + '%', source: 'Surveys', trend: '+1.5%' },
+                    { label: 'Replies Sent', value: totalRepliesSent, source: 'System', trend: '+4.3%' }
+                ];
+                metrics.forEach(m => {
+                    metricsDiv.innerHTML += `
+                        <div class="metric-card">
+                            <div class="metric-label">${m.label}</div>
+                            <div class="metric-value">${m.value}</div>
+                            <div class="metric-compare positive">▲ ${m.trend}</div>
+                            <div class="metric-source">${m.source}</div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function updateTables() {
+            const emailRoles = ['Email Support', 'Subject Matter Expert', 'Social Media Support I Email Support', 'Zowie I Email Support', 'Admin Support Specialist'];
+            const chatRoles = ['Live Chat Specialist I Email Support', 'Live Chat Specialist I'];
+
+            const emailData = allData.filter(d => emailRoles.some(role => d.role.includes(role)));
+            const chatData = allData.filter(d => chatRoles.some(role => d.role.includes(role)));
+
+            document.getElementById('emailTableBody').innerHTML = emailData.length > 0
+                ? emailData.map(d => `
+                    <tr>
+                        <td><strong>${d.name}</strong></td>
+                        <td>${d.customersHelped}</td>
+                        <td>${d.hrs > 0 ? (d.customersHelped / d.hrs).toFixed(2) : '0'}</td>
+                        <td>${d.monthlyHappiness}</td>
+                        <td>${d.hrs > 0 ? (d.hubActNum / d.hrs).toFixed(2) : '0'}</td>
+                        <td><span class="status-${d.status.toLowerCase()}">${d.status}</span></td>
+                    </tr>
+                `).join('')
+                : '<tr><td colspan="6" class="no-data">No data available</td></tr>';
+
+            document.getElementById('chatTableBody').innerHTML = chatData.length > 0
+                ? chatData.map(d => `
+                    <tr>
+                        <td><strong>${d.name}</strong></td>
+                        <td>${d.conversationsRepliedTo}</td>
+                        <td>${d.hrs > 0 ? (d.conversationsRepliedTo / d.hrs).toFixed(2) : '0'}</td>
+                        <td>${d.csatDen > 0 ? (d.csatNum / d.csatDen * 100).toFixed(1) : '0'}%</td>
+                        <td>${d.repliesSent}</td>
+                        <td><span class="status-${d.status.toLowerCase()}">${d.status}</span></td>
+                    </tr>
+                `).join('')
+                : '<tr><td colspan="6" class="no-data">No data available</td></tr>';
+        }
+
+        function updateTimestamps() {
+            const now = new Date();
+            document.getElementById('lastUpdateTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('dataDate').textContent = now.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+
+        function expandAll(type) {
+            document.querySelectorAll(`#${type}Metrics .metric-card`).forEach(card => card.classList.remove('collapsed'));
+        }
+
+        function collapseAll(type) {
+            document.querySelectorAll(`#${type}Metrics .metric-card`).forEach(card => card.classList.add('collapsed'));
+        }
+
+        function switchChartPeriod(period) {
+            event.target.parentElement.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function refreshData() {
+            document.getElementById('refreshText').textContent = 'Refreshing...';
+            setTimeout(() => {
+                loadSampleData();
+                document.getElementById('refreshText').textContent = 'Refresh';
+            }, 1000);
+        }
+
+        // Add setup button
+        const refreshBadge = document.querySelector('.refresh-badge');
+        refreshBadge.innerHTML = `
+            <span id="refreshSpinner" style="display:none;">↻</span>
+            <span id="refreshText">Setup API</span>
+        `;
+        refreshBadge.onclick = setupAPI;
+
+        function setupAPI() {
+            const apiKey = prompt('Enter your Google Sheets API Key:', CONFIG.API_KEY);
+            if (apiKey && apiKey !== CONFIG.API_KEY) {
+                CONFIG.API_KEY = apiKey;
+                localStorage.setItem('pgApiKey', apiKey);
+                CONFIG.USE_LIVE_DATA = true;
+                localStorage.setItem('pgUseLiveData', 'true');
+                document.getElementById('refreshText').textContent = 'Loading...';
+                fetchGoogleSheetData().then(() => {
+                    document.getElementById('refreshText').textContent = 'Refresh';
+                });
+            }
+        }
+
+        // Initialize
+        if (CONFIG.API_KEY && CONFIG.USE_LIVE_DATA) {
+            fetchGoogleSheetData();
+        } else {
+            loadSampleData();
+        }
+    </script>
+</body>
+</html>
