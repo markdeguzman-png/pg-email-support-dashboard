@@ -390,6 +390,15 @@
             { name: "Juljo Abeleda", role: "Email Support", customersHelped: 35, hrs: 8.10, monthlyHappiness: 88, replies: 37, hubActNum: 5.19, conversationsRepliedTo: 25, csatNum: 11, csatDen: 12, repliesSent: 17, status: "Active" }
         ];
 
+        function formatNumber(num, decimals = 0) {
+            if (typeof num !== 'number') return num;
+            const formatted = num.toFixed(decimals);
+            return parseFloat(formatted).toLocaleString('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        }
+
         function loadData() {
             allData = sampleData;
             populateNameFilter();
@@ -455,11 +464,11 @@
             const totalReplies = data.reduce((s, d) => s + d.replies, 0);
             const totalHubActivity = data.reduce((s, d) => s + d.hubActNum, 0);
 
-            document.getElementById('emailCustomers').textContent = totalCustomers;
-            document.getElementById('emailPerHour').textContent = (totalCustomers / totalHrs).toFixed(2);
-            document.getElementById('emailHappiness').textContent = avgHappiness.toFixed(0);
-            document.getElementById('emailReplies').textContent = totalReplies;
-            document.getElementById('emailHubActivity').textContent = ((totalHubActivity / totalHrs) * 100).toFixed(1) + '%';
+            document.getElementById('emailCustomers').textContent = formatNumber(totalCustomers);
+            document.getElementById('emailPerHour').textContent = formatNumber(totalCustomers / totalHrs, 2);
+            document.getElementById('emailHappiness').textContent = formatNumber(avgHappiness);
+            document.getElementById('emailReplies').textContent = formatNumber(totalReplies);
+            document.getElementById('emailHubActivity').textContent = formatNumber((totalHubActivity / totalHrs) * 100, 1) + '%';
         }
 
         function updateChatMetrics(data) {
@@ -477,10 +486,10 @@
             const totalCsatDen = data.reduce((s, d) => s + d.csatDen, 0);
             const totalReplies = data.reduce((s, d) => s + d.repliesSent, 0);
 
-            document.getElementById('chatCount').textContent = totalChats;
-            document.getElementById('chatPerHour').textContent = (totalChats / totalHrs).toFixed(2);
-            document.getElementById('chatCSAT').textContent = ((totalCsatNum / totalCsatDen) * 100).toFixed(1) + '%';
-            document.getElementById('chatReplies').textContent = totalReplies;
+            document.getElementById('chatCount').textContent = formatNumber(totalChats);
+            document.getElementById('chatPerHour').textContent = formatNumber(totalChats / totalHrs, 2);
+            document.getElementById('chatCSAT').textContent = formatNumber((totalCsatNum / totalCsatDen) * 100, 1) + '%';
+            document.getElementById('chatReplies').textContent = formatNumber(totalReplies);
         }
 
         function updateTables(emailData, chatData) {
@@ -488,11 +497,11 @@
                 ? emailData.map(d => `
                     <tr>
                         <td><strong>${d.name}</strong></td>
-                        <td>${d.customersHelped}</td>
-                        <td>${(d.customersHelped / d.hrs).toFixed(2)}</td>
-                        <td>${d.monthlyHappiness}</td>
-                        <td>${d.replies}</td>
-                        <td>${((d.hubActNum / d.hrs) * 100).toFixed(1)}%</td>
+                        <td>${formatNumber(d.customersHelped)}</td>
+                        <td>${formatNumber(d.customersHelped / d.hrs, 2)}</td>
+                        <td>${formatNumber(d.monthlyHappiness)}</td>
+                        <td>${formatNumber(d.replies)}</td>
+                        <td>${formatNumber((d.hubActNum / d.hrs) * 100, 1)}%</td>
                         <td><span class="status-${d.status.toLowerCase()}">${d.status}</span></td>
                     </tr>
                 `).join('')
@@ -502,10 +511,10 @@
                 ? chatData.map(d => `
                     <tr>
                         <td><strong>${d.name}</strong></td>
-                        <td>${d.conversationsRepliedTo}</td>
-                        <td>${(d.conversationsRepliedTo / d.hrs).toFixed(2)}</td>
-                        <td>${((d.csatNum / d.csatDen) * 100).toFixed(1)}%</td>
-                        <td>${d.repliesSent}</td>
+                        <td>${formatNumber(d.conversationsRepliedTo)}</td>
+                        <td>${formatNumber(d.conversationsRepliedTo / d.hrs, 2)}</td>
+                        <td>${formatNumber((d.csatNum / d.csatDen) * 100, 1)}%</td>
+                        <td>${formatNumber(d.repliesSent)}</td>
                         <td><span class="status-${d.status.toLowerCase()}">${d.status}</span></td>
                     </tr>
                 `).join('')

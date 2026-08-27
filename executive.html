@@ -337,6 +337,15 @@
             { name: "Juljo Abeleda", role: "Email Support", customersHelped: 35, hrs: 8.10, monthlyHappiness: 88, replies: 37, hubActNum: 5.19, conversationsRepliedTo: 25, csatNum: 11, csatDen: 12, repliesSent: 17, date: "2026-08-27", status: "Active" }
         ];
 
+        function formatNumber(num, decimals = 0) {
+            if (typeof num !== 'number') return num;
+            const formatted = num.toFixed(decimals);
+            return parseFloat(formatted).toLocaleString('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        }
+
         function loadData() {
             allData = sampleData;
             updateDisplay();
@@ -366,16 +375,16 @@
             const totalCsatDen = allData.reduce((s, d) => s + d.csatDen, 0);
             const totalRepliesSent = allData.reduce((s, d) => s + d.repliesSent, 0);
 
-            document.getElementById('totalCustomers').textContent = totalCustomers;
-            document.getElementById('avgEmailsPerHour').textContent = (totalCustomers / totalHrs).toFixed(2);
-            document.getElementById('avgHappiness').textContent = avgHappiness.toFixed(0);
-            document.getElementById('totalReplies').textContent = totalReplies;
-            document.getElementById('avgHubActivity').textContent = ((totalHubActivity / totalHrs) * 100).toFixed(1) + '%';
-            document.getElementById('totalConversations').textContent = totalConversations;
-            document.getElementById('avgChatsPerHour').textContent = (totalConversations / totalHrs).toFixed(2);
-            document.getElementById('csatScore').textContent = ((totalCsatNum / totalCsatDen) * 100).toFixed(1) + '%';
-            document.getElementById('avgRepliesPerChat').textContent = (totalRepliesSent / totalConversations).toFixed(2);
-            document.getElementById('totalHours').textContent = totalHrs.toFixed(2);
+            document.getElementById('totalCustomers').textContent = formatNumber(totalCustomers);
+            document.getElementById('avgEmailsPerHour').textContent = formatNumber(totalCustomers / totalHrs, 2);
+            document.getElementById('avgHappiness').textContent = formatNumber(avgHappiness);
+            document.getElementById('totalReplies').textContent = formatNumber(totalReplies);
+            document.getElementById('avgHubActivity').textContent = formatNumber((totalHubActivity / totalHrs) * 100, 1) + '%';
+            document.getElementById('totalConversations').textContent = formatNumber(totalConversations);
+            document.getElementById('avgChatsPerHour').textContent = formatNumber(totalConversations / totalHrs, 2);
+            document.getElementById('csatScore').textContent = formatNumber((totalCsatNum / totalCsatDen) * 100, 1) + '%';
+            document.getElementById('avgRepliesPerChat').textContent = formatNumber(totalRepliesSent / totalConversations, 2);
+            document.getElementById('totalHours').textContent = formatNumber(totalHrs, 2);
         }
 
         function updateTimebasedTable() {
@@ -434,15 +443,15 @@
             return `
                 <tr>
                     <td><strong>${period}</strong></td>
-                    <td>${totalCustomers}</td>
-                    <td>${(totalCustomers / totalHrs).toFixed(2)}</td>
-                    <td>${avgHappiness.toFixed(0)}</td>
-                    <td>${totalReplies}</td>
-                    <td>${((totalHubActivity / totalHrs) * 100).toFixed(1)}%</td>
-                    <td>${totalConversations}</td>
-                    <td>${(totalConversations / totalHrs).toFixed(2)}</td>
-                    <td>${((totalCsatNum / totalCsatDen) * 100).toFixed(1)}%</td>
-                    <td>${(totalRepliesSent / totalConversations).toFixed(2)}</td>
+                    <td>${formatNumber(totalCustomers)}</td>
+                    <td>${formatNumber(totalCustomers / totalHrs, 2)}</td>
+                    <td>${formatNumber(avgHappiness)}</td>
+                    <td>${formatNumber(totalReplies)}</td>
+                    <td>${formatNumber((totalHubActivity / totalHrs) * 100, 1)}%</td>
+                    <td>${formatNumber(totalConversations)}</td>
+                    <td>${formatNumber(totalConversations / totalHrs, 2)}</td>
+                    <td>${formatNumber((totalCsatNum / totalCsatDen) * 100, 1)}%</td>
+                    <td>${formatNumber(totalRepliesSent / totalConversations, 2)}</td>
                 </tr>
             `;
         }
