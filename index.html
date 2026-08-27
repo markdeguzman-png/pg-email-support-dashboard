@@ -362,29 +362,37 @@
         async function fetchGoogleSheetData() {
             try {
                 const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
-                const response = await fetch(url);
-                const data = await response.json();
+                console.log('Fetching from:', url);
 
-                if (!data.values) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('Data received:', data.values ? `${data.values.length} rows` : 'No data');
+
+                if (!data.values || data.values.length < 2) {
                     console.error('No data found in sheet');
                     return [];
                 }
 
                 const headers = data.values[0];
                 const rows = data.values.slice(1);
-
-                // Map column headers to indices
-                const colMap = {};
-                headers.forEach((header, index) => {
-                    colMap[header.toLowerCase().trim()] = index;
-                });
+                console.log('Headers:', headers);
+                console.log('Sample row:', rows[0]);
 
                 // Parse rows into data objects
                 const parsed = rows.map(row => {
-                    if (!row[22] && !row[23]) return null; // Skip empty rows (Name and Role are cols 22-23)
+                    if (!row || !row[22] || row[22].trim() === '') return null;
                     return {
-                        name: row[22] || '',
-                        role: row[23] || '',
+                        name: (row[22] || '').trim(),
+                        role: (row[23] || '').trim(),
                         customersHelped: parseInt(row[1]) || 0,
                         hrs: parseFloat(row[10]) || 0,
                         monthlyHappiness: parseInt(row[3]) || 0,
@@ -394,15 +402,16 @@
                         csatNum: parseInt(row[4]) || 0,
                         csatDen: parseInt(row[5]) || 1,
                         repliesSent: parseInt(row[8]) || 0,
-                        status: row[14] || 'Active',
-                        date: row[17] || new Date().toISOString().split('T')[0]
+                        status: (row[14] || 'Active').trim(),
+                        date: (row[17] || new Date().toISOString().split('T')[0]).trim()
                     };
-                }).filter(d => d !== null && d.name);
+                }).filter(d => d !== null);
 
+                console.log('Parsed data:', parsed.length, 'rows');
                 return parsed;
             } catch (error) {
                 console.error('Error fetching sheet data:', error);
-                alert('Error loading data from Google Sheets. Check console for details.');
+                alert(`Error: ${error.message}`);
                 return [];
             }
         }
