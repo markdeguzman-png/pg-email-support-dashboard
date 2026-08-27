@@ -350,7 +350,6 @@
     <script>
         let allData = [];
 
-        // Sample data from Schedule tab
         const sampleData = [
             { name: "Paul Acsay", role: "Email Support", customersHelped: 47, hrs: 8.06, monthlyHappiness: 80, replies: 48, hubActNum: 5.64, conversationsRepliedTo: 32, csatNum: 3, csatDen: 9, repliesSent: 14, status: "Active" },
             { name: "Rocy Benitez", role: "Subject Matter Expert", customersHelped: 34, hrs: 8.14, monthlyHappiness: 82, replies: 34, hubActNum: 4.97, conversationsRepliedTo: 28, csatNum: 14, csatDen: 14, repliesSent: 21, status: "Active" },
@@ -388,7 +387,8 @@
 
         function loadData() {
             allData = sampleData;
-            updateDisplay();
+            populateNameFilter();
+            applyFilters();
         }
 
         function switchTab(tab) {
@@ -398,9 +398,35 @@
             document.getElementById(tab + 'Section').style.display = 'block';
         }
 
-        function updateDisplay() {
-            const emailData = allData.filter(d => d.role.toLowerCase().includes('email'));
-            const chatData = allData.filter(d => d.role.toLowerCase().includes('chat') || d.role.toLowerCase().includes('live'));
+        function populateNameFilter() {
+            const names = [...new Set(allData.map(d => d.name))].sort();
+            const select = document.getElementById('nameFilter');
+            select.innerHTML = '<option value="">All Team Members</option>';
+            names.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            let filtered = allData;
+
+            const roleFilter = document.getElementById('roleFilter').value;
+            if (roleFilter === 'email') {
+                filtered = filtered.filter(d => d.role.toLowerCase().includes('email'));
+            } else if (roleFilter === 'chat') {
+                filtered = filtered.filter(d => d.role.toLowerCase().includes('chat') || d.role.toLowerCase().includes('live'));
+            }
+
+            const nameFilter = document.getElementById('nameFilter').value;
+            if (nameFilter) {
+                filtered = filtered.filter(d => d.name === nameFilter);
+            }
+
+            const emailData = filtered.filter(d => d.role.toLowerCase().includes('email'));
+            const chatData = filtered.filter(d => d.role.toLowerCase().includes('chat') || d.role.toLowerCase().includes('live'));
 
             updateEmailMetrics(emailData);
             updateChatMetrics(chatData);
@@ -485,6 +511,10 @@
             const now = new Date();
             document.getElementById('updateTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
+
+        // Setup filter listeners
+        document.getElementById('roleFilter').addEventListener('change', applyFilters);
+        document.getElementById('nameFilter').addEventListener('change', applyFilters);
 
         // Initialize
         loadData();
