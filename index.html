@@ -355,6 +355,58 @@
     <script>
         let allData = [];
 
+        const SHEET_ID = '1REQYqoqsT1MKwLAiRqF84z95gGIWnlbMgPhl8xawdwE';
+        const API_KEY = 'AIzaSyCXbymDOIfSwl4x175n8XGZp3ihAQsr90w';
+        const SHEET_NAME = 'Schedule';
+
+        async function fetchGoogleSheetData() {
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}?key=${API_KEY}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (!data.values) {
+                    console.error('No data found in sheet');
+                    return [];
+                }
+
+                const headers = data.values[0];
+                const rows = data.values.slice(1);
+
+                // Map column headers to indices
+                const colMap = {};
+                headers.forEach((header, index) => {
+                    colMap[header.toLowerCase().trim()] = index;
+                });
+
+                // Parse rows into data objects
+                const parsed = rows.map(row => {
+                    if (!row[0]) return null; // Skip empty rows
+                    return {
+                        name: row[colMap['name'] || 0] || '',
+                        role: row[colMap['role'] || 1] || '',
+                        customersHelped: parseInt(row[colMap['customers_helped'] || 2]) || 0,
+                        hrs: parseFloat(row[colMap['hrs'] || 3]) || 0,
+                        monthlyHappiness: parseInt(row[colMap['monthly_happiness'] || 4]) || 0,
+                        replies: parseInt(row[colMap['replies'] || 5]) || 0,
+                        hubActNum: parseFloat(row[colMap['hub_act_num'] || 6]) || 0,
+                        conversationsRepliedTo: parseInt(row[colMap['conversations_replied_to'] || 7]) || 0,
+                        csatNum: parseInt(row[colMap['csat_num'] || 8]) || 0,
+                        csatDen: parseInt(row[colMap['csat_den'] || 9]) || 1,
+                        repliesSent: parseInt(row[colMap['replies_sent'] || 10]) || 0,
+                        status: row[colMap['employment_status'] || 11] || 'Active',
+                        date: row[colMap['date'] || 12] || new Date().toISOString().split('T')[0]
+                    };
+                }).filter(d => d !== null);
+
+                return parsed;
+            } catch (error) {
+                console.error('Error fetching sheet data:', error);
+                alert('Error loading data from Google Sheets. Check console for details.');
+                return [];
+            }
+        }
+
         const baseEmployees = [
             { name: "Paul Acsay", role: "Email Support", customersHelped: 47, hrs: 8.06, monthlyHappiness: 80, replies: 48, hubActNum: 5.64, conversationsRepliedTo: 32, csatNum: 3, csatDen: 9, repliesSent: 14, status: "Active" },
             { name: "Rocy Benitez", role: "Subject Matter Expert", customersHelped: 34, hrs: 8.14, monthlyHappiness: 82, replies: 34, hubActNum: 4.97, conversationsRepliedTo: 28, csatNum: 14, csatDen: 14, repliesSent: 21, status: "Active" },
@@ -407,10 +459,13 @@
             });
         }
 
-        function loadData() {
-            allData = sampleData;
-            populateNameFilter();
-            applyFilters();
+        async function loadData() {
+            document.getElementById('emailCustomers').textContent = 'Loading...';
+            allData = await fetchGoogleSheetData();
+            if (allData.length > 0) {
+                populateNameFilter();
+                applyFilters();
+            }
         }
 
         function switchTab(tab) {
