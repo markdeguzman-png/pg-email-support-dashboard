@@ -586,9 +586,49 @@
             document.getElementById('chatReplies').textContent = formatNumber(totalReplies);
         }
 
+        function aggregateByName(data) {
+            const grouped = {};
+            data.forEach(d => {
+                if (!grouped[d.name]) {
+                    grouped[d.name] = {
+                        name: d.name,
+                        role: d.role,
+                        customersHelped: 0,
+                        hrs: 0,
+                        monthlyHappiness: [],
+                        replies: 0,
+                        hubActNum: 0,
+                        conversationsRepliedTo: 0,
+                        csatNum: 0,
+                        csatDen: 0,
+                        repliesSent: 0,
+                        status: d.status
+                    };
+                }
+                grouped[d.name].customersHelped += d.customersHelped;
+                grouped[d.name].hrs += d.hrs;
+                grouped[d.name].monthlyHappiness.push(d.monthlyHappiness);
+                grouped[d.name].replies += d.replies;
+                grouped[d.name].hubActNum += d.hubActNum;
+                grouped[d.name].conversationsRepliedTo += d.conversationsRepliedTo;
+                grouped[d.name].csatNum += d.csatNum;
+                grouped[d.name].csatDen += d.csatDen;
+                grouped[d.name].repliesSent += d.repliesSent;
+            });
+
+            return Object.values(grouped).map(d => ({
+                ...d,
+                monthlyHappiness: d.monthlyHappiness.length > 0 ?
+                    d.monthlyHappiness.reduce((a,b) => a+b) / d.monthlyHappiness.length : 0
+            }));
+        }
+
         function updateTables(emailData, chatData) {
-            document.getElementById('emailTable').innerHTML = emailData.length > 0
-                ? emailData.map(d => `
+            const emailAgg = aggregateByName(emailData);
+            const chatAgg = aggregateByName(chatData);
+
+            document.getElementById('emailTable').innerHTML = emailAgg.length > 0
+                ? emailAgg.map(d => `
                     <tr>
                         <td><strong>${d.name}</strong></td>
                         <td>${formatNumber(d.customersHelped)}</td>
@@ -601,13 +641,13 @@
                 `).join('')
                 : '<tr><td colspan="7" class="no-data">No data</td></tr>';
 
-            document.getElementById('chatTable').innerHTML = chatData.length > 0
-                ? chatData.map(d => `
+            document.getElementById('chatTable').innerHTML = chatAgg.length > 0
+                ? chatAgg.map(d => `
                     <tr>
                         <td><strong>${d.name}</strong></td>
                         <td>${formatNumber(d.conversationsRepliedTo)}</td>
                         <td>${formatNumber(d.conversationsRepliedTo / d.hrs, 2)}</td>
-                        <td>${formatNumber((d.csatNum / d.csatDen) * 100, 1)}%</td>
+                        <td>${d.csatDen > 0 ? formatNumber((d.csatNum / d.csatDen) * 100, 1) : '0'}%</td>
                         <td>${formatNumber(d.repliesSent)}</td>
                         <td><span class="status-${d.status.toLowerCase()}">${d.status}</span></td>
                     </tr>
