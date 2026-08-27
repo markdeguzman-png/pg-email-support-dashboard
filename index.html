@@ -355,7 +355,7 @@
     <script>
         let allData = [];
 
-        const sampleData = [
+        const baseEmployees = [
             { name: "Paul Acsay", role: "Email Support", customersHelped: 47, hrs: 8.06, monthlyHappiness: 80, replies: 48, hubActNum: 5.64, conversationsRepliedTo: 32, csatNum: 3, csatDen: 9, repliesSent: 14, status: "Active" },
             { name: "Rocy Benitez", role: "Subject Matter Expert", customersHelped: 34, hrs: 8.14, monthlyHappiness: 82, replies: 34, hubActNum: 4.97, conversationsRepliedTo: 28, csatNum: 14, csatDen: 14, repliesSent: 21, status: "Active" },
             { name: "Shairah Marie Oraiz", role: "Email Support", customersHelped: 6, hrs: 8.37, monthlyHappiness: 90, replies: 6, hubActNum: 6.36, conversationsRepliedTo: 18, csatNum: 7, csatDen: 8, repliesSent: 12, status: "Active" },
@@ -389,6 +389,14 @@
             { name: "Jumar Dichoso", role: "Email Support", customersHelped: 44, hrs: 8.03, monthlyHappiness: 91, replies: 46, hubActNum: 6.02, conversationsRepliedTo: 30, csatNum: 14, csatDen: 15, repliesSent: 21, status: "Active" },
             { name: "Juljo Abeleda", role: "Email Support", customersHelped: 35, hrs: 8.10, monthlyHappiness: 88, replies: 37, hubActNum: 5.19, conversationsRepliedTo: 25, csatNum: 11, csatDen: 12, repliesSent: 17, status: "Active" }
         ];
+
+        const sampleData = [];
+        const dates = ['2026-08-01', '2026-08-05', '2026-08-10', '2026-08-15', '2026-08-20', '2026-08-25', '2026-08-27'];
+        dates.forEach(date => {
+            baseEmployees.forEach(emp => {
+                sampleData.push({...emp, date: date});
+            });
+        });
 
         function formatNumber(num, decimals = 0) {
             if (typeof num !== 'number') return num;
