@@ -427,6 +427,15 @@
         function applyFilters() {
             let filtered = allData;
 
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            if (startDate) {
+                filtered = filtered.filter(d => (d.date || '2026-08-27') >= startDate);
+            }
+            if (endDate) {
+                filtered = filtered.filter(d => (d.date || '2026-08-27') <= endDate);
+            }
+
             const roleFilter = document.getElementById('roleFilter').value;
             if (roleFilter === 'email') {
                 filtered = filtered.filter(d => d.role.toLowerCase().includes('email'));
@@ -527,6 +536,8 @@
         }
 
         // Setup filter listeners
+        document.getElementById('startDate').addEventListener('change', applyFilters);
+        document.getElementById('endDate').addEventListener('change', applyFilters);
         document.getElementById('roleFilter').addEventListener('change', applyFilters);
         document.getElementById('nameFilter').addEventListener('change', applyFilters);
 
