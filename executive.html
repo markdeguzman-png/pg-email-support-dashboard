@@ -349,6 +349,10 @@
             { name: "Juljo Abeleda", role: "Email Support", customersHelped: 35, hrs: 8.10, monthlyHappiness: 88, replies: 37, hubActNum: 5.19, conversationsRepliedTo: 25, csatNum: 11, csatDen: 12, repliesSent: 17, date: "2026-08-27", status: "Active" }
         ];
 
+        const SHEET_ID = '1REQYqoqsT1MKwLAiRqF84z95gGIWnlbMgPhl8xawdwE';
+        const API_KEY = 'AIzaSyCXbymDOIfSwl4x175n8XGZp3ihAQsr90w';
+        const SHEET_NAME = 'Schedule';
+
         function formatNumber(num, decimals = 0) {
             if (typeof num !== 'number') return num;
             const formatted = num.toFixed(decimals);
@@ -358,8 +362,49 @@
             });
         }
 
-        function loadData() {
-            allData = sampleData;
+        async function fetchGoogleSheetData() {
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A1:Z10000?key=${API_KEY}`;
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                if (!data.values || data.values.length < 2) return sampleData;
+
+                const rows = data.values.slice(1);
+                const parsed = rows.map(row => {
+                    if (!row || !row[22] || row[22].trim() === '') return null;
+                    return {
+                        name: (row[22] || '').trim(),
+                        role: (row[23] || '').trim(),
+                        customersHelped: parseInt(row[1]) || 0,
+                        hrs: parseFloat(row[10]) || 0,
+                        monthlyHappiness: parseInt(row[3]) || 0,
+                        replies: parseInt(row[0]) || 0,
+                        hubActNum: parseFloat(row[11]) || 0,
+                        conversationsRepliedTo: parseInt(row[7]) || 0,
+                        csatNum: parseInt(row[4]) || 0,
+                        csatDen: parseInt(row[5]) || 1,
+                        repliesSent: parseInt(row[8]) || 0,
+                        status: (row[13] || 'Active').trim(),
+                        date: (row[17] || new Date().toISOString().split('T')[0]).trim()
+                    };
+                }).filter(d => d !== null);
+
+                const uniqueDates = [...new Set(parsed.map(d => d.date))].sort((a, b) => new Date(a) - new Date(b));
+                console.log('Executive: Loaded', parsed.length, 'rows |', uniqueDates.length, 'unique dates | First:', uniqueDates[0], '| Last:', uniqueDates[uniqueDates.length - 1]);
+                return parsed;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return sampleData;
+            }
+        }
+
+        async function loadData() {
+            allData = await fetchGoogleSheetData();
+            populateSelectors();
             updateDisplay();
         }
 
@@ -384,7 +429,7 @@
         }
 
         function populateDateSelect() {
-            const uniqueDates = [...new Set(allData.map(d => d.date))].sort().reverse();
+            const uniqueDates = [...new Set(allData.map(d => d.date))].sort((a, b) => new Date(b) - new Date(a));
             const select = document.getElementById('dateSelect');
             select.innerHTML = '';
             uniqueDates.forEach(date => {
@@ -494,7 +539,7 @@
                     if (!grouped[d.date]) grouped[d.date] = [];
                     grouped[d.date].push(d);
                 });
-                const uniqueDates = Object.keys(grouped).sort().reverse().slice(0, 30);
+                const uniqueDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).slice(0, 30);
                 console.log('Unique dates found:', uniqueDates.length, 'dates:', uniqueDates.slice(0, 5));
                 uniqueDates.forEach(date => {
                     rows.push(generateRow(date, grouped[date]));
