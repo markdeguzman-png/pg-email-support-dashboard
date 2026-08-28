@@ -150,6 +150,24 @@
             font-weight: 500;
         }
 
+        .metric-comparison {
+            font-size: 12px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(253, 51, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comparison-up {
+            color: #4CAF50;
+        }
+
+        .comparison-down {
+            color: #FF6B6B;
+        }
+
         .table-section {
             background: linear-gradient(135deg, #2A2A2A 0%, #1D1A1A 100%);
             border: 1px solid var(--light-gray);
@@ -506,11 +524,54 @@
             return new Date(dateStr);
         }
 
+        function getPreviousPeriod(startDate, endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            const prevEnd = new Date(start);
+            prevEnd.setDate(prevEnd.getDate() - 1);
+            const prevStart = new Date(prevEnd);
+            prevStart.setDate(prevStart.getDate() - days + 1);
+
+            return {
+                start: prevStart.toISOString().split('T')[0],
+                end: prevEnd.toISOString().split('T')[0]
+            };
+        }
+
+        function calculateComparison(current, previous) {
+            if (!previous || previous === 0) return null;
+            const change = ((current - previous) / previous) * 100;
+            return {
+                value: change,
+                text: change > 0 ? `+${change.toFixed(1)}%` : `${change.toFixed(1)}%`,
+                direction: change > 0 ? 'up' : 'down'
+            };
+        }
+
+        function filterByDateRange(data, startDate, endDate) {
+            return data.filter(d => {
+                const date = parseDate(d.date);
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59);
+                return date >= start && date <= end;
+            });
+        }
+
         function applyFilters() {
             let filtered = allData;
 
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
+
+            let comparisonData = null;
+            if (startDate && endDate) {
+                const prevPeriod = getPreviousPeriod(startDate, endDate);
+                comparisonData = filterByDateRange(allData, prevPeriod.start, prevPeriod.end);
+            }
+
             if (startDate) {
                 const start = new Date(startDate);
                 filtered = filtered.filter(d => parseDate(d.date) >= start);
@@ -524,25 +585,30 @@
             const roleFilter = document.getElementById('roleFilter').value;
             if (roleFilter === 'email') {
                 filtered = filtered.filter(d => d.role.toLowerCase().includes('email'));
+                if (comparisonData) comparisonData = comparisonData.filter(d => d.role.toLowerCase().includes('email'));
             } else if (roleFilter === 'chat') {
                 filtered = filtered.filter(d => d.role.toLowerCase().includes('chat') || d.role.toLowerCase().includes('live'));
+                if (comparisonData) comparisonData = comparisonData.filter(d => d.role.toLowerCase().includes('chat') || d.role.toLowerCase().includes('live'));
             }
 
             const nameFilter = document.getElementById('nameFilter').value;
             if (nameFilter) {
                 filtered = filtered.filter(d => d.name === nameFilter);
+                if (comparisonData) comparisonData = comparisonData.filter(d => d.name === nameFilter);
             }
 
             const emailData = filtered.filter(d => d.role.toLowerCase().includes('email'));
             const chatData = filtered.filter(d => d.role.toLowerCase().includes('chat') || d.role.toLowerCase().includes('live'));
+            const emailComparison = comparisonData ? comparisonData.filter(d => d.role.toLowerCase().includes('email')) : null;
+            const chatComparison = comparisonData ? comparisonData.filter(d => d.role.toLowerCase().includes('chat') || d.role.toLowerCase().includes('live')) : null;
 
-            updateEmailMetrics(emailData);
-            updateChatMetrics(chatData);
+            updateEmailMetrics(emailData, emailComparison);
+            updateChatMetrics(chatData, chatComparison);
             updateTables(emailData, chatData);
             updateTime();
         }
 
-        function updateEmailMetrics(data) {
+        function updateEmailMetrics(data, comparisonData) {
             if (data.length === 0) {
                 document.getElementById('emailCustomers').textContent = '—';
                 document.getElementById('emailPerHour').textContent = '—';
@@ -558,14 +624,28 @@
             const totalReplies = data.reduce((s, d) => s + d.replies, 0);
             const totalHubActivity = data.reduce((s, d) => s + d.hubActNum, 0);
 
-            document.getElementById('emailCustomers').textContent = formatNumber(totalCustomers);
+            let custComparison = null, happinessComparison = null, repliesComparison = null;
+            if (comparisonData && comparisonData.length > 0) {
+                const prevCustomers = comparisonData.reduce((s, d) => s + d.customersHelped, 0);
+                const prevHappiness = comparisonData.reduce((s, d) => s + d.monthlyHappiness, 0) / comparisonData.length;
+                const prevReplies = comparisonData.reduce((s, d) => s + d.replies, 0);
+
+                custComparison = calculateComparison(totalCustomers, prevCustomers);
+                happinessComparison = calculateComparison(avgHappiness, prevHappiness);
+                repliesComparison = calculateComparison(totalReplies, prevReplies);
+            }
+
+            document.getElementById('emailCustomers').innerHTML = formatNumber(totalCustomers) +
+                (custComparison ? `<div class="metric-comparison"><span class="comparison-${custComparison.direction}">${custComparison.text}</span></div>` : '');
             document.getElementById('emailPerHour').textContent = formatNumber(totalCustomers / totalHrs, 2);
-            document.getElementById('emailHappiness').textContent = formatNumber(avgHappiness);
-            document.getElementById('emailReplies').textContent = formatNumber(totalReplies);
+            document.getElementById('emailHappiness').innerHTML = formatNumber(avgHappiness) +
+                (happinessComparison ? `<div class="metric-comparison"><span class="comparison-${happinessComparison.direction}">${happinessComparison.text}</span></div>` : '');
+            document.getElementById('emailReplies').innerHTML = formatNumber(totalReplies) +
+                (repliesComparison ? `<div class="metric-comparison"><span class="comparison-${repliesComparison.direction}">${repliesComparison.text}</span></div>` : '');
             document.getElementById('emailHubActivity').textContent = formatNumber((totalHubActivity / totalHrs) * 100, 1) + '%';
         }
 
-        function updateChatMetrics(data) {
+        function updateChatMetrics(data, comparisonData) {
             if (data.length === 0) {
                 document.getElementById('chatCount').textContent = '—';
                 document.getElementById('chatPerHour').textContent = '—';
@@ -580,10 +660,21 @@
             const totalCsatDen = data.reduce((s, d) => s + d.csatDen, 0);
             const totalReplies = data.reduce((s, d) => s + d.repliesSent, 0);
 
-            document.getElementById('chatCount').textContent = formatNumber(totalChats);
+            let chatComparison = null, repliesComparison = null;
+            if (comparisonData && comparisonData.length > 0) {
+                const prevChats = comparisonData.reduce((s, d) => s + d.conversationsRepliedTo, 0);
+                const prevReplies = comparisonData.reduce((s, d) => s + d.repliesSent, 0);
+
+                chatComparison = calculateComparison(totalChats, prevChats);
+                repliesComparison = calculateComparison(totalReplies, prevReplies);
+            }
+
+            document.getElementById('chatCount').innerHTML = formatNumber(totalChats) +
+                (chatComparison ? `<div class="metric-comparison"><span class="comparison-${chatComparison.direction}">${chatComparison.text}</span></div>` : '');
             document.getElementById('chatPerHour').textContent = formatNumber(totalChats / totalHrs, 2);
             document.getElementById('chatCSAT').textContent = formatNumber((totalCsatNum / totalCsatDen) * 100, 1) + '%';
-            document.getElementById('chatReplies').textContent = formatNumber(totalReplies);
+            document.getElementById('chatReplies').innerHTML = formatNumber(totalReplies) +
+                (repliesComparison ? `<div class="metric-comparison"><span class="comparison-${repliesComparison.direction}">${repliesComparison.text}</span></div>` : '');
         }
 
         function aggregateByName(data) {
