@@ -411,7 +411,7 @@
         function setTimeframe(timeframe) {
             currentTimeframe = timeframe;
             document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
 
             // Show/hide selectors
             document.getElementById('dateSelect').style.display = timeframe === 'daily' ? 'inline-block' : 'none';
@@ -609,6 +609,7 @@
         document.getElementById('monthSelect').addEventListener('change', updateSummaryMetrics);
 
         loadData();
+        setTimeframe('daily');
     </script>
 </body>
 </html>
