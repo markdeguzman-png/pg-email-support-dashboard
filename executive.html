@@ -494,7 +494,9 @@
                     if (!grouped[d.date]) grouped[d.date] = [];
                     grouped[d.date].push(d);
                 });
-                Object.keys(grouped).sort().reverse().slice(0, 30).forEach(date => {
+                const uniqueDates = Object.keys(grouped).sort().reverse().slice(0, 30);
+                console.log('Unique dates found:', uniqueDates.length, 'dates:', uniqueDates.slice(0, 5));
+                uniqueDates.forEach(date => {
                     rows.push(generateRow(date, grouped[date]));
                 });
             } else if (currentTimeframe === 'weekly') {
