@@ -406,7 +406,7 @@
             });
             const select = document.getElementById('weekSelect');
             select.innerHTML = '';
-            Object.keys(weeks).sort().reverse().slice(0, 4).forEach(week => {
+            Object.keys(weeks).sort().reverse().forEach(week => {
                 const opt = document.createElement('option');
                 opt.value = week;
                 opt.text = `Week of ${week}`;
@@ -422,7 +422,7 @@
             });
             const select = document.getElementById('monthSelect');
             select.innerHTML = '';
-            Object.keys(months).sort().reverse().slice(0, 3).forEach(month => {
+            Object.keys(months).sort().reverse().forEach(month => {
                 const opt = document.createElement('option');
                 opt.value = month;
                 opt.text = month;
