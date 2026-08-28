@@ -213,6 +213,18 @@
         <button class="time-btn" onclick="setTimeframe('monthly')">Monthly</button>
     </div>
 
+    <div class="time-selector" id="periodSelector" style="margin-top: 15px;">
+        <select id="dateSelect" style="padding: 10px; border-radius: 4px; display: none;">
+            <option>Select Date</option>
+        </select>
+        <select id="weekSelect" style="padding: 10px; border-radius: 4px; display: none;">
+            <option>Select Week</option>
+        </select>
+        <select id="monthSelect" style="padding: 10px; border-radius: 4px; display: none;">
+            <option>Select Month</option>
+        </select>
+    </div>
+
     <!-- Metrics Summary -->
     <div id="summarySection">
         <h2 style="margin-bottom: 20px; font-size: 24px;">Total Metrics Summary</h2>
@@ -355,7 +367,87 @@
             currentTimeframe = timeframe;
             document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
+
+            // Show/hide selectors
+            document.getElementById('dateSelect').style.display = timeframe === 'daily' ? 'inline-block' : 'none';
+            document.getElementById('weekSelect').style.display = timeframe === 'weekly' ? 'inline-block' : 'none';
+            document.getElementById('monthSelect').style.display = timeframe === 'monthly' ? 'inline-block' : 'none';
+
+            populateSelectors();
             updateDisplay();
+        }
+
+        function populateSelectors() {
+            if (currentTimeframe === 'daily') populateDateSelect();
+            else if (currentTimeframe === 'weekly') populateWeekSelect();
+            else if (currentTimeframe === 'monthly') populateMonthSelect();
+        }
+
+        function populateDateSelect() {
+            const uniqueDates = [...new Set(allData.map(d => d.date))].sort().reverse();
+            const select = document.getElementById('dateSelect');
+            select.innerHTML = '';
+            uniqueDates.forEach(date => {
+                const opt = document.createElement('option');
+                opt.value = date;
+                opt.text = date;
+                select.appendChild(opt);
+            });
+            if (uniqueDates.length > 0) select.value = uniqueDates[0];
+        }
+
+        function populateWeekSelect() {
+            const weeks = {};
+            allData.forEach(d => {
+                const date = new Date(d.date);
+                const weekStart = new Date(date.setDate(date.getDate() - date.getDay()));
+                const key = weekStart.toISOString().split('T')[0];
+                if (!weeks[key]) weeks[key] = key;
+            });
+            const select = document.getElementById('weekSelect');
+            select.innerHTML = '';
+            Object.keys(weeks).sort().reverse().slice(0, 4).forEach(week => {
+                const opt = document.createElement('option');
+                opt.value = week;
+                opt.text = `Week of ${week}`;
+                select.appendChild(opt);
+            });
+        }
+
+        function populateMonthSelect() {
+            const months = {};
+            allData.forEach(d => {
+                const month = d.date.substring(0, 7);
+                if (!months[month]) months[month] = month;
+            });
+            const select = document.getElementById('monthSelect');
+            select.innerHTML = '';
+            Object.keys(months).sort().reverse().slice(0, 3).forEach(month => {
+                const opt = document.createElement('option');
+                opt.value = month;
+                opt.text = month;
+                select.appendChild(opt);
+            });
+        }
+
+        function getFilteredDataByTimeframe() {
+            if (currentTimeframe === 'daily') {
+                const date = document.getElementById('dateSelect').value;
+                return allData.filter(d => d.date === date);
+            } else if (currentTimeframe === 'weekly') {
+                const weekStart = document.getElementById('weekSelect').value;
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                return allData.filter(d => {
+                    const date = new Date(d.date);
+                    const start = new Date(weekStart);
+                    return date >= start && date <= weekEnd;
+                });
+            } else if (currentTimeframe === 'monthly') {
+                const month = document.getElementById('monthSelect').value;
+                return allData.filter(d => d.date.substring(0, 7) === month);
+            }
+            return allData;
         }
 
         function updateDisplay() {
@@ -365,15 +457,21 @@
         }
 
         function updateSummaryMetrics() {
-            const totalCustomers = allData.reduce((s, d) => s + d.customersHelped, 0);
-            const totalHrs = allData.reduce((s, d) => s + d.hrs, 0);
-            const avgHappiness = allData.reduce((s, d) => s + d.monthlyHappiness, 0) / allData.length;
-            const totalReplies = allData.reduce((s, d) => s + d.replies, 0);
-            const totalHubActivity = allData.reduce((s, d) => s + d.hubActNum, 0);
-            const totalConversations = allData.reduce((s, d) => s + d.conversationsRepliedTo, 0);
-            const totalCsatNum = allData.reduce((s, d) => s + d.csatNum, 0);
-            const totalCsatDen = allData.reduce((s, d) => s + d.csatDen, 0);
-            const totalRepliesSent = allData.reduce((s, d) => s + d.repliesSent, 0);
+            const data = getFilteredDataByTimeframe();
+            if (data.length === 0) {
+                document.getElementById('totalCustomers').textContent = '—';
+                return;
+            }
+
+            const totalCustomers = data.reduce((s, d) => s + d.customersHelped, 0);
+            const totalHrs = data.reduce((s, d) => s + d.hrs, 0);
+            const avgHappiness = data.reduce((s, d) => s + d.monthlyHappiness, 0) / data.length;
+            const totalReplies = data.reduce((s, d) => s + d.replies, 0);
+            const totalHubActivity = data.reduce((s, d) => s + d.hubActNum, 0);
+            const totalConversations = data.reduce((s, d) => s + d.conversationsRepliedTo, 0);
+            const totalCsatNum = data.reduce((s, d) => s + d.csatNum, 0);
+            const totalCsatDen = data.reduce((s, d) => s + d.csatDen, 0);
+            const totalRepliesSent = data.reduce((s, d) => s + d.repliesSent, 0);
 
             document.getElementById('totalCustomers').textContent = formatNumber(totalCustomers);
             document.getElementById('avgEmailsPerHour').textContent = formatNumber(totalCustomers / totalHrs, 2);
@@ -396,8 +494,7 @@
                     if (!grouped[d.date]) grouped[d.date] = [];
                     grouped[d.date].push(d);
                 });
-
-                Object.keys(grouped).sort().reverse().forEach(date => {
+                Object.keys(grouped).sort().reverse().slice(0, 30).forEach(date => {
                     rows.push(generateRow(date, grouped[date]));
                 });
             } else if (currentTimeframe === 'weekly') {
@@ -409,8 +506,7 @@
                     if (!weeks[weekKey]) weeks[weekKey] = [];
                     weeks[weekKey].push(d);
                 });
-
-                Object.keys(weeks).sort().reverse().forEach(week => {
+                Object.keys(weeks).sort().reverse().slice(0, 4).forEach(week => {
                     rows.push(generateRow(`Week of ${week}`, weeks[week]));
                 });
             } else if (currentTimeframe === 'monthly') {
@@ -420,8 +516,7 @@
                     if (!months[monthKey]) months[monthKey] = [];
                     months[monthKey].push(d);
                 });
-
-                Object.keys(months).sort().reverse().forEach(month => {
+                Object.keys(months).sort().reverse().slice(0, 3).forEach(month => {
                     rows.push(generateRow(month, months[month]));
                 });
             }
@@ -460,6 +555,11 @@
             const now = new Date();
             document.getElementById('updateTime').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
+
+        // Add event listeners for selectors
+        document.getElementById('dateSelect').addEventListener('change', updateDisplay);
+        document.getElementById('weekSelect').addEventListener('change', updateDisplay);
+        document.getElementById('monthSelect').addEventListener('change', updateDisplay);
 
         loadData();
     </script>
