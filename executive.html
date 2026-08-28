@@ -604,9 +604,9 @@
         }
 
         // Add event listeners for selectors
-        document.getElementById('dateSelect').addEventListener('change', updateDisplay);
-        document.getElementById('weekSelect').addEventListener('change', updateDisplay);
-        document.getElementById('monthSelect').addEventListener('change', updateDisplay);
+        document.getElementById('dateSelect').addEventListener('change', updateSummaryMetrics);
+        document.getElementById('weekSelect').addEventListener('change', updateSummaryMetrics);
+        document.getElementById('monthSelect').addEventListener('change', updateSummaryMetrics);
 
         loadData();
     </script>
