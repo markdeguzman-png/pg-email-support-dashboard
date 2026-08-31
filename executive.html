@@ -462,15 +462,17 @@
         function populateMonthSelect() {
             const months = {};
             allData.forEach(d => {
-                const month = d.date.substring(0, 7);
-                if (!months[month]) months[month] = month;
+                const date = new Date(d.date);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const monthText = date.toLocaleString('en-US', { year: 'numeric', month: 'long' });
+                if (!months[monthKey]) months[monthKey] = monthText;
             });
             const select = document.getElementById('monthSelect');
             select.innerHTML = '';
             Object.keys(months).sort().reverse().forEach(month => {
                 const opt = document.createElement('option');
                 opt.value = month;
-                opt.text = month;
+                opt.text = months[month];
                 select.appendChild(opt);
             });
         }
