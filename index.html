@@ -243,13 +243,19 @@
     </div>
 
     <div class="filters">
-        <div class="filter-group">
+        <div class="filter-group" style="grid-column: 1 / -1;">
             <label>Date Range</label>
-            <input type="date" id="startDate">
-        </div>
-        <div class="filter-group">
-            <label>End Date</label>
-            <input type="date" id="endDate">
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <select id="dateRangePreset" style="padding: 12px; background: #F4F2F0; border: 1px solid var(--light-gray); border-radius: 4px; color: var(--black); font-size: 14px;">
+                    <option value="mtd">Month to Date</option>
+                    <option value="last7">Last 7 Days</option>
+                    <option value="last30">Last 30 Days</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+                <input type="date" id="startDate" style="padding: 12px; background: #F4F2F0; border: 1px solid var(--light-gray); border-radius: 4px; color: var(--black); font-size: 14px;">
+                <span style="color: var(--gray);">→</span>
+                <input type="date" id="endDate" style="padding: 12px; background: #F4F2F0; border: 1px solid var(--light-gray); border-radius: 4px; color: var(--black); font-size: 14px;">
+            </div>
         </div>
         <div class="filter-group">
             <label>Role</label>
@@ -495,8 +501,17 @@
             allData = await fetchGoogleSheetData();
             if (allData.length > 0) {
                 populateNameFilter();
+                initializeDateRange();
                 applyFilters();
             }
+        }
+
+        function initializeDateRange() {
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            document.getElementById('startDate').value = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
         }
 
         function switchTab(tab) {
@@ -756,6 +771,32 @@
         }
 
         // Setup filter listeners
+        document.getElementById('dateRangePreset').addEventListener('change', function() {
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+
+            switch(this.value) {
+                case 'mtd':
+                    document.getElementById('startDate').value = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+                    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+                    break;
+                case 'last7':
+                    const last7 = new Date(today);
+                    last7.setDate(today.getDate() - 7);
+                    document.getElementById('startDate').value = last7.toISOString().split('T')[0];
+                    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+                    break;
+                case 'last30':
+                    const last30 = new Date(today);
+                    last30.setDate(today.getDate() - 30);
+                    document.getElementById('startDate').value = last30.toISOString().split('T')[0];
+                    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+                    break;
+            }
+            applyFilters();
+        });
+
         document.getElementById('startDate').addEventListener('change', applyFilters);
         document.getElementById('endDate').addEventListener('change', applyFilters);
         document.getElementById('roleFilter').addEventListener('change', applyFilters);
