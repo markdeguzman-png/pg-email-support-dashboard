@@ -835,8 +835,14 @@
             applyFilters();
         });
 
-        document.getElementById('startDate').addEventListener('change', applyFilters);
-        document.getElementById('endDate').addEventListener('change', applyFilters);
+        document.getElementById('startDate').addEventListener('change', function() {
+            document.getElementById('dateRangePreset').value = 'custom';
+            applyFilters();
+        });
+        document.getElementById('endDate').addEventListener('change', function() {
+            document.getElementById('dateRangePreset').value = 'custom';
+            applyFilters();
+        });
         document.getElementById('roleFilter').addEventListener('change', applyFilters);
         document.getElementById('nameFilter').addEventListener('change', applyFilters);
 
