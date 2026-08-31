@@ -247,10 +247,15 @@
             <label>Date Range</label>
             <div style="display: flex; gap: 15px; align-items: center;">
                 <select id="dateRangePreset" style="padding: 12px; background: #F4F2F0; border: 1px solid var(--light-gray); border-radius: 4px; color: var(--black); font-size: 14px;">
-                    <option value="mtd">Month to Date</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="wtd">Week to Date</option>
                     <option value="last7">Last 7 Days</option>
                     <option value="last30">Last 30 Days</option>
-                    <option value="custom">Custom Range</option>
+                    <option value="mtd" selected>Month to Date</option>
+                    <option value="lastMonth">Last Month</option>
+                    <option value="allData">All Data</option>
+                    <option value="custom">Custom</option>
                 </select>
                 <input type="date" id="startDate" style="padding: 12px; background: #F4F2F0; border: 1px solid var(--light-gray); border-radius: 4px; color: var(--black); font-size: 14px;">
                 <span style="color: var(--gray);">→</span>
@@ -777,8 +782,22 @@
             const currentYear = today.getFullYear();
 
             switch(this.value) {
-                case 'mtd':
-                    document.getElementById('startDate').value = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+                case 'today':
+                    const todayStr = today.toISOString().split('T')[0];
+                    document.getElementById('startDate').value = todayStr;
+                    document.getElementById('endDate').value = todayStr;
+                    break;
+                case 'yesterday':
+                    const yesterday = new Date(today);
+                    yesterday.setDate(today.getDate() - 1);
+                    const yesterdayStr = yesterday.toISOString().split('T')[0];
+                    document.getElementById('startDate').value = yesterdayStr;
+                    document.getElementById('endDate').value = yesterdayStr;
+                    break;
+                case 'wtd':
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - today.getDay());
+                    document.getElementById('startDate').value = weekStart.toISOString().split('T')[0];
                     document.getElementById('endDate').value = today.toISOString().split('T')[0];
                     break;
                 case 'last7':
@@ -792,6 +811,25 @@
                     last30.setDate(today.getDate() - 30);
                     document.getElementById('startDate').value = last30.toISOString().split('T')[0];
                     document.getElementById('endDate').value = today.toISOString().split('T')[0];
+                    break;
+                case 'mtd':
+                    document.getElementById('startDate').value = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+                    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+                    break;
+                case 'lastMonth':
+                    const lastMonthNum = currentMonth === 0 ? 11 : currentMonth - 1;
+                    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+                    const lastMonthStart = `${lastMonthYear}-${String(lastMonthNum + 1).padStart(2, '0')}-01`;
+                    const lastMonthEnd = new Date(lastMonthYear, lastMonthNum + 1, 0).toISOString().split('T')[0];
+                    document.getElementById('startDate').value = lastMonthStart;
+                    document.getElementById('endDate').value = lastMonthEnd;
+                    break;
+                case 'allData':
+                    const allDates = allData.map(d => new Date(d.date)).sort((a, b) => a - b);
+                    if (allDates.length > 0) {
+                        document.getElementById('startDate').value = allDates[0].toISOString().split('T')[0];
+                        document.getElementById('endDate').value = allDates[allDates.length - 1].toISOString().split('T')[0];
+                    }
                     break;
             }
             applyFilters();
