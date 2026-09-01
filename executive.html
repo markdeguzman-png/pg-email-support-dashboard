@@ -492,7 +492,11 @@
                 });
             } else if (currentTimeframe === 'monthly') {
                 const month = document.getElementById('monthSelect').value;
-                return allData.filter(d => d.date.substring(0, 7) === month);
+                return allData.filter(d => {
+                    const date = new Date(d.date);
+                    const dateMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    return dateMonth === month;
+                });
             }
             return allData;
         }
