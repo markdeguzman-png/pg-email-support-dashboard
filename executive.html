@@ -364,16 +364,32 @@
 
         async function fetchGoogleSheetData() {
             try {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A1:Z10000?key=${API_KEY}`;
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                const response = await fetch(url, { signal: controller.signal });
-                clearTimeout(timeoutId);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const data = await response.json();
-                if (!data.values || data.values.length < 2) return sampleData;
+                let allRows = [];
+                let batchNumber = 1;
 
-                const rows = data.values.slice(1);
+                // Fetch data in batches to avoid API response size limits
+                const batchRanges = [
+                    'A1:Z4000',    // Batch 1: rows 1-4000
+                    'A4001:Z7000'  // Batch 2: rows 4001-7000
+                ];
+
+                for (const range of batchRanges) {
+                    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!${range}?key=${API_KEY}`;
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+                    const response = await fetch(url, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    if (data.values && data.values.length > 0) {
+                        allRows = allRows.concat(data.values);
+                    }
+                    batchNumber++;
+                }
+
+                if (!allRows || allRows.length < 2) return sampleData;
+
+                const rows = allRows.slice(1);
                 const parsed = rows.map(row => {
                     if (!row || !row[22] || row[22].trim() === '') return null;
                     return {
