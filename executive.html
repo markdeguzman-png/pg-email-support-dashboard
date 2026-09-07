@@ -456,9 +456,15 @@
                 opt.text = date;
                 select.appendChild(opt);
             });
-            // Set default to previous day (index 1) instead of today (index 0)
-            if (uniqueDates.length > 1) select.value = uniqueDates[1];
-            else if (uniqueDates.length > 0) select.value = uniqueDates[0];
+            // Set default to previous day (yesterday)
+            if (uniqueDates.length > 0) {
+                const today = uniqueDates[0]; // Most recent date in data
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+                // Set to yesterday if it exists, otherwise use most recent
+                select.value = uniqueDates.includes(yesterdayStr) ? yesterdayStr : uniqueDates[0];
+            }
         }
 
         function populateWeekSelect() {
@@ -565,8 +571,25 @@
                     if (!grouped[d.date]) grouped[d.date] = [];
                     grouped[d.date].push(d);
                 });
-                const uniqueDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a)).slice(0, 30);
-                console.log('Unique dates found:', uniqueDates.length, 'dates:', uniqueDates.slice(0, 5));
+                const allDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
+
+                // Get yesterday (most recent date - 1 day)
+                const today = allDates[0];
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+                // Get 30 days ending on yesterday
+                const endDate = new Date(yesterdayStr);
+                const startDate = new Date(endDate);
+                startDate.setDate(startDate.getDate() - 29); // 30 days total
+
+                const uniqueDates = allDates.filter(date => {
+                    const d = new Date(date);
+                    return d >= startDate && d <= endDate;
+                });
+
+                console.log('Daily table: showing', uniqueDates.length, 'days from', startDate.toISOString().split('T')[0], 'to', yesterdayStr);
                 uniqueDates.forEach(date => {
                     rows.push(generateRow(date, grouped[date]));
                 });
