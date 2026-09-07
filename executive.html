@@ -456,7 +456,9 @@
                 opt.text = date;
                 select.appendChild(opt);
             });
-            if (uniqueDates.length > 0) select.value = uniqueDates[0];
+            // Set default to previous day (index 1) instead of today (index 0)
+            if (uniqueDates.length > 1) select.value = uniqueDates[1];
+            else if (uniqueDates.length > 0) select.value = uniqueDates[0];
         }
 
         function populateWeekSelect() {
