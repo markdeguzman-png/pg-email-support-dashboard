@@ -433,11 +433,12 @@
                 const headers = allRows[0];
                 const rows = allRows.slice(1);
                 console.log('Headers:', headers);
-                console.log('Sample row:', rows[0]);
+                console.log('Total rows after slicing:', rows.length);
+                console.log('First 3 rows:', rows.slice(0, 3));
 
                 // Parse rows into data objects
-                const parsed = rows.map(row => {
-                    if (!row || !row[22] || row[22].trim() === '') return null;
+                const parsed = rows.filter(row => row && row.length > 0).map(row => {
+                    if (!row || !row[23] || (typeof row[23] === 'string' && row[23].trim() === '')) return null;
                     return {
                         name: (row[22] || '').trim(),
                         role: (row[23] || '').trim(),
