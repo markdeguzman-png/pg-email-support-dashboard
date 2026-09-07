@@ -456,15 +456,13 @@
                 opt.text = date;
                 select.appendChild(opt);
             });
-            // Set default to previous day (yesterday)
-            if (uniqueDates.length > 0) {
-                const today = uniqueDates[0]; // Most recent date in data
-                const yesterday = new Date(today);
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toISOString().split('T')[0];
-                // Set to yesterday if it exists, otherwise use most recent
-                select.value = uniqueDates.includes(yesterdayStr) ? yesterdayStr : uniqueDates[0];
-            }
+            // Set default to yesterday (system date - 1 day)
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            // Set to yesterday if it exists in data, otherwise use most recent
+            select.value = uniqueDates.includes(yesterdayStr) ? yesterdayStr : uniqueDates[0];
         }
 
         function populateWeekSelect() {
@@ -573,8 +571,8 @@
                 });
                 const allDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
 
-                // Get yesterday (most recent date - 1 day)
-                const today = allDates[0];
+                // Get yesterday (system date - 1 day)
+                const today = new Date();
                 const yesterday = new Date(today);
                 yesterday.setDate(yesterday.getDate() - 1);
                 const yesterdayStr = yesterday.toISOString().split('T')[0];
