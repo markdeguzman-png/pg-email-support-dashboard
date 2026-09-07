@@ -425,6 +425,9 @@
                     batchNumber++;
                 }
 
+                console.log('Raw allRows length:', allRows.length);
+                console.log('First 2 allRows:', allRows.slice(0, 2));
+
                 if (allRows.length < 2) {
                     console.error('No data found in sheet');
                     return [];
@@ -434,7 +437,8 @@
                 const rows = allRows.slice(1);
                 console.log('Headers:', headers);
                 console.log('Total rows after slicing:', rows.length);
-                console.log('First 3 rows:', rows.slice(0, 3));
+                console.log('First 3 rows raw:', rows.slice(0, 3));
+                console.log('First row length:', rows[0] ? rows[0].length : 'undefined');
 
                 // Parse rows into data objects
                 const parsed = rows.filter(row => row && row.length > 0).map(row => {
