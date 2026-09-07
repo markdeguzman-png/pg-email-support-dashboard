@@ -417,8 +417,8 @@
                     console.log(`Batch ${batchNumber} received:`, data.values ? `${data.values.length} rows` : 'No data');
 
                     if (data.values && data.values.length > 0) {
-                        // Skip header on first batch, include all rows on subsequent batches
-                        const rowsToAdd = batchNumber === 1 ? data.values : data.values;
+                        // Include all rows on first batch (includes header), skip header on subsequent batches
+                        const rowsToAdd = batchNumber === 1 ? data.values : data.values.slice(1);
                         allRows = allRows.concat(rowsToAdd);
                     }
 
