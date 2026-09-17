@@ -488,15 +488,17 @@
                 select.appendChild(opt);
             });
 
-            // Set default to current week (Monday of this week)
+            // Set default to most recent week that is not in the future
             const today = new Date();
-            const daysToMonday = today.getDay() === 0 ? 6 : today.getDay() - 1;
-            const weekStart = new Date(today);
-            weekStart.setDate(weekStart.getDate() - daysToMonday);
-            const currentWeekKey = weekStart.toISOString().split('T')[0];
+            const weekKeys = Object.keys(weeks).sort().reverse(); // Most recent first
 
-            if (Object.keys(weeks).includes(currentWeekKey)) {
-                select.value = currentWeekKey;
+            // Find the first week (most recent) that doesn't exceed today
+            for (const weekKey of weekKeys) {
+                const weekDate = new Date(weekKey);
+                if (weekDate <= today) {
+                    select.value = weekKey;
+                    break;
+                }
             }
         }
 
