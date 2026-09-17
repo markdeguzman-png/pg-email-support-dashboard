@@ -473,7 +473,9 @@
             const weeks = {};
             allData.forEach(d => {
                 const date = new Date(d.date);
-                const weekStart = new Date(date.setDate(date.getDate() - date.getDay()));
+                // Calculate Monday as week start
+                const daysToMonday = date.getDay() === 0 ? 6 : date.getDay() - 1;
+                const weekStart = new Date(date.setDate(date.getDate() - daysToMonday));
                 const key = weekStart.toISOString().split('T')[0];
                 if (!weeks[key]) weeks[key] = key;
             });
@@ -600,7 +602,9 @@
                 const weeks = {};
                 allData.forEach(d => {
                     const d2 = new Date(d.date);
-                    const weekStart = new Date(d2.setDate(d2.getDate() - d2.getDay()));
+                    // Calculate Monday as week start
+                    const daysToMonday = d2.getDay() === 0 ? 6 : d2.getDay() - 1;
+                    const weekStart = new Date(d2.setDate(d2.getDate() - daysToMonday));
                     const weekKey = weekStart.toISOString().split('T')[0];
                     if (!weeks[weekKey]) weeks[weekKey] = [];
                     weeks[weekKey].push(d);
