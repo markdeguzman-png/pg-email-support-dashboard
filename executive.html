@@ -488,17 +488,15 @@
                 select.appendChild(opt);
             });
 
-            // Set default to week containing yesterday
+            // Set default to current week (Monday of this week)
             const today = new Date();
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-            const daysToMonday = yesterday.getDay() === 0 ? 6 : yesterday.getDay() - 1;
-            const weekStart = new Date(yesterday);
+            const daysToMonday = today.getDay() === 0 ? 6 : today.getDay() - 1;
+            const weekStart = new Date(today);
             weekStart.setDate(weekStart.getDate() - daysToMonday);
-            const yesterdayWeekKey = weekStart.toISOString().split('T')[0];
+            const currentWeekKey = weekStart.toISOString().split('T')[0];
 
-            if (Object.keys(weeks).includes(yesterdayWeekKey)) {
-                select.value = yesterdayWeekKey;
+            if (Object.keys(weeks).includes(currentWeekKey)) {
+                select.value = currentWeekKey;
             }
         }
 
