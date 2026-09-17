@@ -487,6 +487,19 @@
                 opt.text = `Week of ${week}`;
                 select.appendChild(opt);
             });
+
+            // Set default to week containing yesterday
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const daysToMonday = yesterday.getDay() === 0 ? 6 : yesterday.getDay() - 1;
+            const weekStart = new Date(yesterday);
+            weekStart.setDate(weekStart.getDate() - daysToMonday);
+            const yesterdayWeekKey = weekStart.toISOString().split('T')[0];
+
+            if (Object.keys(weeks).includes(yesterdayWeekKey)) {
+                select.value = yesterdayWeekKey;
+            }
         }
 
         function populateMonthSelect() {
