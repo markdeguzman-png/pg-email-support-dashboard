@@ -442,21 +442,21 @@
 
                 // Parse rows into data objects
                 const parsed = rows.filter(row => row && row.length > 0).map(row => {
-                    if (!row || !row[23] || (typeof row[23] === 'string' && row[23].trim() === '')) return null;
+                    if (!row || !row[24] || (typeof row[24] === 'string' && row[24].trim() === '')) return null;
                     return {
-                        name: (row[23] || '').trim(),
-                        role: (row[24] || '').trim(),
+                        name: (row[24] || '').trim(),
+                        role: (row[25] || '').trim(),
                         customersHelped: parseInt(row[1]) || 0,
-                        hrs: parseFloat(row[11]) || 0,
-                        monthlyHappiness: parseInt(row[3]) || 0,
+                        hrs: parseFloat(row[12]) || 0,
+                        monthlyHappiness: parseInt(row[4]) || 0,
                         replies: parseInt(row[0]) || 0,
-                        hubActNum: parseFloat(row[12]) || 0,
-                        conversationsRepliedTo: parseInt(row[7]) || 0,
-                        csatNum: parseInt(row[4]) || 0,
-                        csatDen: parseInt(row[5]) || 1,
-                        repliesSent: parseInt(row[8]) || 0,
-                        status: (row[22] || 'Active').trim(),
-                        date: (row[18] || new Date().toISOString().split('T')[0]).trim()
+                        hubActNum: parseFloat(row[13]) || 0,
+                        conversationsRepliedTo: parseInt(row[8]) || 0,
+                        csatNum: parseInt(row[5]) || 0,
+                        csatDen: parseInt(row[6]) || 1,
+                        repliesSent: parseInt(row[9]) || 0,
+                        status: (row[23] || 'Active').trim(),
+                        date: (row[19] || new Date().toISOString().split('T')[0]).trim()
                     };
                 }).filter(d => d !== null);
 
