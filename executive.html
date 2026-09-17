@@ -460,7 +460,11 @@
             const today = new Date();
             const yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            // Format as M/D/YYYY to match data format
+            const month = yesterday.getMonth() + 1;
+            const day = yesterday.getDate();
+            const year = yesterday.getFullYear();
+            const yesterdayStr = `${month}/${day}/${year}`;
             // Set to yesterday if it exists in data, otherwise use most recent
             select.value = uniqueDates.includes(yesterdayStr) ? yesterdayStr : uniqueDates[0];
         }
@@ -575,10 +579,9 @@
                 const today = new Date();
                 const yesterday = new Date(today);
                 yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toISOString().split('T')[0];
 
                 // Get 30 days ending on yesterday
-                const endDate = new Date(yesterdayStr);
+                const endDate = new Date(yesterday);
                 const startDate = new Date(endDate);
                 startDate.setDate(startDate.getDate() - 29); // 30 days total
 
@@ -587,7 +590,9 @@
                     return d >= startDate && d <= endDate;
                 });
 
-                console.log('Daily table: showing', uniqueDates.length, 'days from', startDate.toISOString().split('T')[0], 'to', yesterdayStr);
+                const startStr = `${startDate.getMonth() + 1}/${startDate.getDate()}/${startDate.getFullYear()}`;
+                const endStr = `${endDate.getMonth() + 1}/${endDate.getDate()}/${endDate.getFullYear()}`;
+                console.log('Daily table: showing', uniqueDates.length, 'days from', startStr, 'to', endStr);
                 uniqueDates.forEach(date => {
                     rows.push(generateRow(date, grouped[date]));
                 });
