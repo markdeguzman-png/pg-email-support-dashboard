@@ -492,7 +492,10 @@
                 }
                 const weekStart = new Date(date);
                 weekStart.setDate(weekStart.getDate() - daysToMonday);
-                const key = weekStart.toISOString().split('T')[0];
+                const y = weekStart.getFullYear();
+                const m = String(weekStart.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(weekStart.getDate()).padStart(2, '0');
+                const key = `${y}-${m}-${dayStr}`;
                 if (!weeks[key]) weeks[key] = key;
             });
             const select = document.getElementById('weekSelect');
@@ -675,7 +678,10 @@
                     }
                     const weekStart = new Date(d2);
                     weekStart.setDate(weekStart.getDate() - daysToMonday);
-                    const weekKey = weekStart.toISOString().split('T')[0];
+                    const y = weekStart.getFullYear();
+                    const m = String(weekStart.getMonth() + 1).padStart(2, '0');
+                    const dayStr = String(weekStart.getDate()).padStart(2, '0');
+                    const weekKey = `${y}-${m}-${dayStr}`;
                     if (!weeks[weekKey]) weeks[weekKey] = [];
                     weeks[weekKey].push(d);
                 });
